@@ -62,7 +62,7 @@
                             Full Name
                         </label>
                         <input
-                            v-model="form.name"
+                            v-model="form.full_name"
                             type="text"
                             required
                             class="input"
@@ -118,7 +118,7 @@
                     <div>
                         <label class="flex items-start">
                             <input
-                                v-model="form.agreeToTerms"
+                                v-model="form_valid.agreeToTerms"
                                 type="checkbox"
                                 required
                                 class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1"
@@ -168,11 +168,14 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const form = reactive({
-    name: "",
+    full_name: "",
     email: "",
     phone: "",
     password: "",
     role: "customer",
+});
+
+const form_valid = reactive({
     agreeToTerms: false,
 });
 

@@ -10,6 +10,29 @@
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const BASE_URL = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+
+function parseJwt(token) {
+    try {
+        const parts = token.split(".");
+        if (parts.length !== 3) return null;
+        const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+        const json = decodeURIComponent(
+            atob(payload)
+                .split("")
+                .map(function (c) {
+                    return (
+                        "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+                    );
+                })
+                .join(""),
+        );
+        return JSON.parse(json);
+    } catch (e) {
+        return null;
+    }
+}
+
 export const api = {
     async getHelpers(filters = {}) {
         await delay(500);
@@ -18,8 +41,8 @@ export const api = {
         if (filters.category) {
             helpers = helpers.filter((h) =>
                 h.categories.some((c) =>
-                    c.toLowerCase().includes(filters.category.toLowerCase())
-                )
+                    c.toLowerCase().includes(filters.category.toLowerCase()),
+                ),
             );
         }
 
@@ -41,7 +64,7 @@ export const api = {
                 (h) =>
                     h.name.toLowerCase().includes(searchLower) ||
                     h.bio.toLowerCase().includes(searchLower) ||
-                    h.skills.some((s) => s.toLowerCase().includes(searchLower))
+                    h.skills.some((s) => s.toLowerCase().includes(searchLower)),
             );
         }
 
@@ -168,46 +191,110 @@ export const api = {
     },
 
     async login(email, password) {
-        await delay(600);
+        // Use OAuth2 form fields: username, password
+        try {
+            const params = new URLSearchParams();
+            params.append("username", email);
+            params.append("password", password);
 
-        if (email === "helper@test.com") {
+            const res = await fetch(`${BASE_URL}/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: params.toString(),
+            });
+
+            if (!res.ok) {
+                const err = await res
+                    .json()
+                    .catch(() => ({ detail: res.statusText }));
+                return { success: false, error: err.detail || "Login failed" };
+            }
+
+            const json = await res.json();
+            const token = json.access_token;
+            const payload = parseJwt(token);
+            const userId = payload?.sub || null;
+
             return {
                 success: true,
-                data: mockHelperProfile,
-                token: "mock-jwt-token-helper",
+                token,
+                data: userId ? { id: userId } : null,
             };
+        } catch (error) {
+            return { success: false, error: error.message || "Network error" };
         }
-
-        return {
-            success: true,
-            data: mockUser,
-            token: "mock-jwt-token-customer",
-        };
     },
 
     async register(userData) {
-        await delay(700);
-        const newUser = {
-            id: `${userData.role}-${Date.now()}`,
-            ...userData,
-            verified: false,
-            memberSince: new Date().toISOString(),
-        };
+        try {
+            const res = await fetch(`${BASE_URL}/auth/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(userData),
+            });
 
-        return {
-            success: true,
-            data: newUser,
-            token: "mock-jwt-token",
-            message: "Registration successful!",
-        };
+            if (!res.ok) {
+                const err = await res
+                    .json()
+                    .catch(() => ({ detail: res.statusText }));
+                return {
+                    success: false,
+                    error: err.detail || "Registration failed",
+                };
+            }
+
+            const user = await res.json();
+
+            // Try to login after registration to get token
+            const loginResp = await this.login(
+                userData.email,
+                userData.password,
+            );
+            if (!loginResp.success) {
+                // Registration succeeded but login failed; return user without token
+                return {
+                    success: true,
+                    data: user,
+                    token: null,
+                    message: "Registered but login failed",
+                };
+            }
+
+            return { success: true, data: user, token: loginResp.token };
+        } catch (error) {
+            return { success: false, error: error.message || "Network error" };
+        }
     },
 
     async getUserProfile() {
-        await delay(300);
-        return {
-            success: true,
-            data: mockUser,
-        };
+        // Try to return decoded user id from token stored in localStorage
+        const token = localStorage.getItem("token");
+        if (!token) {
+            return { success: false, error: "No token" };
+        }
+        const payload = parseJwt(token);
+        if (!payload || !payload.sub) {
+            return { success: false, error: "Invalid token payload" };
+        }
+
+        // If backend exposes a user endpoint like /users/{id}, you can uncomment/use the following:
+        // try {
+        //     const res = await fetch(`${BASE_URL}/users/${payload.sub}`, {
+        //         headers: { Authorization: `Bearer ${token}` },
+        //     });
+        //     if (!res.ok) return { success: false, error: "Failed to fetch user" };
+        //     const user = await res.json();
+        //     return { success: true, data: user };
+        // } catch (e) {
+        //     return { success: false, error: e.message };
+        // }
+
+        // Fallback: return minimal info decoded from token
+        return { success: true, data: { id: payload.sub } };
     },
 
     async getHelperProfile() {
