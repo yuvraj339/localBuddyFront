@@ -101,19 +101,31 @@ export const api = {
     },
 
     async createBooking(bookingData) {
-        await delay(800);
-        const newBooking = {
-            id: mockBookings.length + 1,
-            ...bookingData,
-            status: "pending",
-            createdAt: new Date().toISOString(),
-        };
-
-        return {
-            success: true,
-            data: newBooking,
-            message: "Booking request sent successfully!",
-        };
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${BASE_URL}/api/v1/bookings/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify(bookingData),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || "Failed to create booking");
+            }
+            return {
+                success: true,
+                data: data,
+                message: "Booking request sent successfully!",
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
     },
 
     async getBookings(userId, role = "customer") {

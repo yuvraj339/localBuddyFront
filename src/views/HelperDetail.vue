@@ -325,14 +325,16 @@ const handleBooking = async () => {
     }
 
     const bookingData = {
-        helperId: helper.value.id,
-        helperName: helper.value.name,
-        helperAvatar: helper.value.avatar,
+        customer_id: authStore.user.id,
+        helper_id: "ea7e8fe5-d875-4f8a-bd4a-d531df5edbac", //helper.value.id,
+        helper_name: helper.value.name,
+        helper_avatar: helper.value.avatar,
         date: bookingForm.date,
-        timeSlot: `${bookingForm.startTime} - ${calculateEndTime()}`,
+        start_time: bookingForm.startTime,
+        end_time: calculateEndTime(),
         hours: bookingForm.hours,
         rate: helper.value.hourlyRate,
-        total: totalAmount.value,
+        total_amount: totalAmount.value,
         category: bookingForm.category,
         description: bookingForm.description,
         location: "",
