@@ -129,37 +129,86 @@ export const api = {
     },
 
     async getBookings(userId, role = "customer") {
-        await delay(400);
-        return {
-            success: true,
-            data: mockBookings,
-        };
+        try {
+            const token = localStorage.getItem("token");
+            // If role is customer, fetch by customer_id; if helper, fetch by helper_id
+            const param = role === "helper" ? "helper_id" : "customer_id";
+            const res = await fetch(`${BASE_URL}/api/v1/bookings/${userId}`, {
+                headers: {
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || "Failed to fetch bookings");
+            }
+            return {
+                success: true,
+                data,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
     },
 
     async getBooking(id) {
-        await delay(300);
-        const booking = mockBookings.find((b) => b.id === parseInt(id));
-
-        if (!booking) {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${BASE_URL}/api/v1/bookings/${id}`, {
+                headers: {
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || "Booking not found");
+            }
+            return {
+                success: true,
+                data,
+            };
+        } catch (error) {
             return {
                 success: false,
-                error: "Booking not found",
+                error: error.message,
             };
         }
-
-        return {
-            success: true,
-            data: booking,
-        };
     },
 
     async updateBookingStatus(id, status) {
-        await delay(500);
-        return {
-            success: true,
-            data: { id, status },
-            message: `Booking ${status} successfully`,
-        };
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(
+                `${BASE_URL}/api/v1/bookings/${id}/status`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    },
+                    body: JSON.stringify({ status }),
+                },
+            );
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(
+                    data.detail || "Failed to update booking status",
+                );
+            }
+            return {
+                success: true,
+                data,
+                message: `Booking ${status} successfully`,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
     },
 
     async getChats() {

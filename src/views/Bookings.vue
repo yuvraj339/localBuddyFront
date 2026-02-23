@@ -70,8 +70,8 @@
                 >
                     <div class="flex items-start space-x-6">
                         <img
-                            :src="booking.helperAvatar"
-                            :alt="booking.helperName"
+                            :src="booking.helper_avatar"
+                            :alt="booking.helper_name"
                             class="w-20 h-20 rounded-full object-cover border-2 border-primary-100"
                         />
 
@@ -81,7 +81,7 @@
                                     <h3
                                         class="text-xl font-semibold text-gray-900"
                                     >
-                                        {{ booking.helperName }}
+                                        {{ booking.helper_name }}
                                     </h3>
                                     <p class="text-gray-600">
                                         {{ booking.category }}
@@ -117,7 +117,8 @@
                                 <div>
                                     <span class="text-gray-600">Time:</span>
                                     <div class="font-medium">
-                                        {{ booking.timeSlot }}
+                                        {{ booking.start_time }} -
+                                        {{ booking.end_time }}
                                     </div>
                                 </div>
                                 <div>
@@ -129,7 +130,7 @@
                                 <div>
                                     <span class="text-gray-600">Total:</span>
                                     <div class="font-medium text-primary-600">
-                                        ₹{{ booking.total }}
+                                        ₹{{ booking.total_amount }}
                                     </div>
                                 </div>
                             </div>
@@ -319,7 +320,7 @@ const trackLocation = (id) => {
 const sendSOS = (id) => {
     if (
         confirm(
-            "This will alert emergency services and platform support. Continue?"
+            "This will alert emergency services and platform support. Continue?",
         )
     ) {
         alert("Emergency alert sent! Help is on the way.");
