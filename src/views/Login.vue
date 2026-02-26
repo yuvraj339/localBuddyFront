@@ -14,7 +14,7 @@
                 <form @submit.prevent="handleLogin" class="space-y-6">
                     <div
                         v-if="authStore.error"
-                        class="bg-danger-50 text-danger-700 p-3 rounded-lg text-sm"
+                        class="bg-red-100 text-red-700 p-3 border-r-2 rounded-lg text-sm"
                     >
                         {{ authStore.error }}
                     </div>

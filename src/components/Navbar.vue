@@ -36,7 +36,7 @@
                             Messages
                             <span
                                 v-if="unreadCount > 0"
-                                class="absolute -top-1 -right-1 bg-danger-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
                             >
                                 {{ unreadCount }}
                             </span>
@@ -82,7 +82,7 @@
                                 class="flex items-center space-x-2 focus:outline-none"
                             >
                                 <img
-                                    :src="authStore.user?.avatar"
+                                    :src="avatarSrc"
                                     alt="Profile"
                                     class="w-10 h-10 rounded-full object-cover border-2 border-primary-200"
                                 />
@@ -115,16 +115,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 
 const router = useRouter();
 const authStore = useAuthStore();
+import { api } from "../services/api";
 
 const showDropdown = ref(false);
 const unreadCount = ref(2);
 const dropdown = ref(null);
+const loading = ref(false);
+const error = ref("");
 
 const handleLogout = () => {
     authStore.logout();
@@ -132,14 +135,45 @@ const handleLogout = () => {
     router.push("/");
 };
 
+const avatarSrc = computed(() => {
+    const baseUrl = "http://localhost:8000";
+    const avatarUrl = authStore.user?.avatar_url;
+
+    // If avatar_url exists, prepend base URL
+    if (avatarUrl) {
+        return `${baseUrl}${avatarUrl}`;
+    }
+
+    // Fallback to default avatar
+    return `${baseUrl}/default-avatar.png`;
+});
+
 const handleClickOutside = (event) => {
     if (dropdown.value && !dropdown.value.contains(event.target)) {
         showDropdown.value = false;
     }
 };
 
+const fetchProfile = async () => {
+    loading.value = true;
+    error.value = "";
+    debugger;
+    if (authStore.user?.avatar_url) {
+        loading.value = false;
+        return;
+    }
+    const resp = await api.getUserProfile();
+    if (resp.success) {
+        authStore.user = resp.data;
+    } else {
+        error.value = resp.error || "Failed to load profile";
+    }
+    loading.value = false;
+};
+
 onMounted(() => {
     document.addEventListener("click", handleClickOutside);
+    fetchProfile();
 });
 
 onUnmounted(() => {

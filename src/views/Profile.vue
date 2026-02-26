@@ -12,12 +12,22 @@
                 <div class="card">
                     <div class="flex items-center space-x-6 mb-6">
                         <img
-                            :src="authStore.user?.avatar"
-                            :alt="authStore.user?.name"
+                            :src="avatarSrc"
+                            :alt="authStore.user?.full_name"
                             class="w-24 h-24 rounded-full object-cover border-4 border-primary-100"
                         />
                         <div>
-                            <button class="btn btn-primary text-sm mb-2">
+                            <input
+                                type="file"
+                                ref="avatarInput"
+                                accept="image/*"
+                                class="hidden"
+                                @change="onAvatarChange"
+                            />
+                            <button
+                                class="btn btn-primary text-sm mb-2"
+                                @click.prevent="triggerAvatarInput"
+                            >
                                 Change Photo
                             </button>
                             <p class="text-xs text-gray-600">
@@ -35,7 +45,7 @@
                                     Full Name
                                 </label>
                                 <input
-                                    v-model="profileForm.name"
+                                    v-model="profileForm.full_name"
                                     type="text"
                                     class="input"
                                 />
@@ -75,7 +85,7 @@
                                 </label>
                                 <input
                                     :value="
-                                        formatDate(authStore.user?.memberSince)
+                                        formatDate(authStore.user?.created_at)
                                     "
                                     type="text"
                                     class="input"
@@ -126,13 +136,25 @@
                                         Email Verified
                                     </div>
                                     <div class="text-sm text-gray-600">
-                                        {authStore.user?.email}
+                                        {{ authStore.user?.email }}
                                     </div>
                                 </div>
                             </div>
-                            <span class="badge badge-success">Verified</span>
+                            <span
+                                :class="[
+                                    'badge',
+                                    authStore.user?.email_verified
+                                        ? 'badge-success'
+                                        : 'badge-warning',
+                                ]"
+                            >
+                                {{
+                                    authStore.user?.email_verified
+                                        ? "Verified"
+                                        : "Not Verified"
+                                }}
+                            </span>
                         </div>
-
                         <div
                             class="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
                         >
@@ -147,13 +169,25 @@
                                         Phone Verified
                                     </div>
                                     <div class="text-sm text-gray-600">
-                                        {authStore.user?.phone}
+                                        {{ authStore.user?.phone }}
                                     </div>
                                 </div>
                             </div>
-                            <span class="badge badge-success">Verified</span>
+                            <span
+                                :class="[
+                                    'badge',
+                                    authStore.user?.phone_verified
+                                        ? 'badge-success'
+                                        : 'badge-warning',
+                                ]"
+                            >
+                                {{
+                                    authStore.user?.phone_verified
+                                        ? "Verified"
+                                        : "Not Verified"
+                                }}
+                            </span>
                         </div>
-
                         <div
                             class="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
                         >
@@ -172,7 +206,28 @@
                                     </div>
                                 </div>
                             </div>
-                            <span class="badge badge-success">Verified</span>
+                            <span
+                                :class="[
+                                    'badge',
+                                    authStore.user?.government_id_verified
+                                        ? 'badge-success'
+                                        : 'badge-warning',
+                                ]"
+                            >
+                                {{
+                                    authStore.user?.government_id_verified
+                                        ? "Verified"
+                                        : "Not Verified"
+                                }}
+                            </span>
+                        </div>
+                        <div class="flex justify-end mt-4">
+                            <button
+                                class="btn btn-primary"
+                                @click="updateVerificationStatus"
+                            >
+                                Update Verification Status
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -190,7 +245,7 @@
                                 Hourly Rate (₹)
                             </label>
                             <input
-                                v-model.number="profileForm.hourlyRate"
+                                v-model.number="profileForm.hourly_rate"
                                 type="number"
                                 min="100"
                                 class="input"
@@ -213,7 +268,7 @@
                                         type="checkbox"
                                         :checked="
                                             profileForm.categories?.includes(
-                                                category
+                                                category,
                                             )
                                         "
                                         @change="toggleCategory(category)"
@@ -287,6 +342,18 @@
                                 Update Password
                             </button>
                         </div>
+                        <div
+                            v-if="passwordError"
+                            class="text-danger-600 text-sm mt-2"
+                        >
+                            {{ passwordError }}
+                        </div>
+                        <div
+                            v-if="passwordSuccess"
+                            class="text-success-600 text-sm mt-2"
+                        >
+                            {{ passwordSuccess }}
+                        </div>
                     </form>
                 </div>
 
@@ -298,7 +365,9 @@
                         Once you delete your account, there is no going back.
                         Please be certain.
                     </p>
-                    <button class="btn btn-danger">Delete Account</button>
+                    <button class="btn btn-danger" @click="deleteAccount">
+                        Delete Account
+                    </button>
                 </div>
             </div>
         </div>
@@ -306,18 +375,53 @@
 </template>
 
 <script setup>
-import { reactive } from "vue";
+import { reactive, ref, onMounted, computed } from "vue";
 import { useAuthStore } from "../stores/auth";
+import { api } from "../services/api";
 
 const authStore = useAuthStore();
+const loading = ref(false);
+const error = ref("");
+const avatarInput = ref(null);
+const newAvatarURL = ref(null);
+const passwordError = ref("");
+const passwordSuccess = ref("");
+const triggerAvatarInput = () => {
+    avatarInput.value && avatarInput.value.click();
+};
+
+const onAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+        alert("Only JPG, PNG, or GIF files are allowed.");
+        return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+        alert("Max file size is 2MB.");
+        return;
+    }
+    loading.value = true;
+    const resp = await api.uploadAvatar(file);
+    if (resp.success) {
+        newAvatarURL.value = resp.data;
+        alert("Photo updated!");
+    } else {
+        alert(resp.error || "Failed to update photo");
+    }
+    loading.value = false;
+};
 
 const profileForm = reactive({
-    name: authStore.user?.name || "",
-    email: authStore.user?.email || "",
-    phone: authStore.user?.phone || "",
-    bio: authStore.user?.bio || "",
-    hourlyRate: 250,
-    categories: ["Elder Care", "Event Support"],
+    full_name: "",
+    email: "",
+    phone: "",
+    bio: "",
+    hourly_rate: 0,
+    categories: [],
+    is_active: false,
+    is_verified: false,
 });
 
 const passwordForm = reactive({
@@ -335,19 +439,123 @@ const availableCategories = [
     "Pet Care",
 ];
 
-const updateProfile = () => {
-    alert("Profile updated successfully!");
+const fetchProfile = async () => {
+    loading.value = true;
+    error.value = "";
+    if (authStore.user?.email) {
+        updateProfileForm(authStore.user);
+    } else {
+        const resp = await api.getUserProfile();
+        if (resp.success) {
+            authStore.user = resp.data;
+            updateProfileForm(authStore.user);
+        } else {
+            error.value = resp.error || "Failed to load profile";
+        }
+    }
+    loading.value = false;
 };
 
-const updatePassword = () => {
+const updateProfileForm = (user) => {
+    profileForm.full_name = user.full_name || "";
+    profileForm.email = user.email || "";
+    profileForm.phone = user.phone || "";
+    profileForm.bio = user.bio || "";
+    profileForm.hourly_rate = user.hourly_rate || 250;
+    profileForm.categories = user.categories || [];
+    profileForm.is_active = user.is_active || false;
+    profileForm.is_verified = user.is_verified || false;
+};
+onMounted(fetchProfile);
+
+const avatarSrc = computed(() => {
+    const baseUrl = "http://localhost:8000";
+    const avatarUrl = newAvatarURL.value || authStore.user?.avatar_url;
+
+    // If avatar_url exists, prepend base URL
+    if (avatarUrl) {
+        return `${baseUrl}${avatarUrl}`;
+    }
+
+    // Fallback to default avatar
+    return `${baseUrl}/default-avatar.png`;
+}); // refetch profile when user data changes
+const updateProfile = async () => {
+    loading.value = true;
+    error.value = "";
+    const resp = await api.updateProfile({
+        full_name: profileForm.full_name,
+        email: profileForm.email,
+        phone: profileForm.phone,
+        bio: profileForm.bio,
+        hourly_rate: profileForm.hourly_rate,
+        categories: profileForm.categories,
+        is_active: profileForm.is_active,
+        is_verified: profileForm.is_verified,
+    });
+    if (resp.success) {
+        authStore.user = resp.data;
+        alert("Profile updated successfully!");
+    } else {
+        error.value = resp.error || "Failed to update profile";
+    }
+    loading.value = false;
+};
+
+const updatePassword = async () => {
+    passwordError.value = "";
+    passwordSuccess.value = "";
     if (passwordForm.new !== passwordForm.confirm) {
-        alert("Passwords do not match!");
+        passwordError.value = "Passwords do not match!";
         return;
     }
-    alert("Password updated successfully!");
-    passwordForm.current = "";
-    passwordForm.new = "";
-    passwordForm.confirm = "";
+    loading.value = true;
+    const resp = await api.updatePassword(
+        passwordForm.current,
+        passwordForm.new,
+    );
+    if (resp.success) {
+        passwordSuccess.value = "Password updated successfully!";
+        passwordForm.current = "";
+        passwordForm.new = "";
+        passwordForm.confirm = "";
+    } else {
+        passwordError.value = resp.error || "Failed to update password";
+    }
+    loading.value = false;
+};
+const updateVerificationStatus = async () => {
+    loading.value = true;
+    const resp = await api.updateVerification(
+        !!authStore.user?.email_verified,
+        !!authStore.user?.phone_verified,
+    );
+    if (resp.success) {
+        authStore.user = resp.data;
+        alert("Verification status updated!");
+    } else {
+        alert(resp.error || "Failed to update verification status");
+    }
+    loading.value = false;
+};
+
+const deleteAccount = async () => {
+    if (
+        !confirm(
+            "Are you sure you want to delete your account? This cannot be undone.",
+        )
+    )
+        return;
+    loading.value = true;
+    const resp = await api.softDeleteAccount();
+    if (resp.success) {
+        alert("Account deleted. You will be logged out.");
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+    } else {
+        alert(resp.error || "Failed to delete account");
+    }
+    loading.value = false;
 };
 
 const toggleCategory = (category) => {

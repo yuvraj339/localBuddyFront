@@ -332,7 +332,6 @@ export const api = {
     },
 
     async getUserProfile() {
-        // Try to return decoded user id from token stored in localStorage
         const token = localStorage.getItem("token");
         if (!token) {
             return { success: false, error: "No token" };
@@ -341,21 +340,24 @@ export const api = {
         if (!payload || !payload.sub) {
             return { success: false, error: "Invalid token payload" };
         }
-
-        // If backend exposes a user endpoint like /users/{id}, you can uncomment/use the following:
-        // try {
-        //     const res = await fetch(`${BASE_URL}/users/${payload.sub}`, {
-        //         headers: { Authorization: `Bearer ${token}` },
-        //     });
-        //     if (!res.ok) return { success: false, error: "Failed to fetch user" };
-        //     const user = await res.json();
-        //     return { success: true, data: user };
-        // } catch (e) {
-        //     return { success: false, error: e.message };
-        // }
-
-        // Fallback: return minimal info decoded from token
-        return { success: true, data: { id: payload.sub } };
+        try {
+            const res = await fetch(`${BASE_URL}/users/${payload.sub}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) {
+                const err = await res
+                    .json()
+                    .catch(() => ({ detail: res.statusText }));
+                return {
+                    success: false,
+                    error: err.detail || "Failed to fetch user",
+                };
+            }
+            const user = await res.json();
+            return { success: true, data: user };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
     },
 
     async getHelperProfile() {
@@ -367,12 +369,41 @@ export const api = {
     },
 
     async updateProfile(profileData) {
-        await delay(500);
-        return {
-            success: true,
-            data: { ...mockUser, ...profileData },
-            message: "Profile updated successfully",
-        };
+        const token = localStorage.getItem("token");
+        if (!token) {
+            return { success: false, error: "No token" };
+        }
+        const payload = parseJwt(token);
+        if (!payload || !payload.sub) {
+            return { success: false, error: "Invalid token payload" };
+        }
+        try {
+            const res = await fetch(`${BASE_URL}/users/${payload.sub}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(profileData),
+            });
+            if (!res.ok) {
+                const err = await res
+                    .json()
+                    .catch(() => ({ detail: res.statusText }));
+                return {
+                    success: false,
+                    error: err.detail || "Failed to update profile",
+                };
+            }
+            const user = await res.json();
+            return {
+                success: true,
+                data: user,
+                message: "Profile updated successfully",
+            };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
     },
 
     async submitReview(bookingId, reviewData) {
@@ -438,5 +469,127 @@ export const api = {
             success: true,
             message: "Emergency alert sent to authorities and platform support",
         };
+    },
+
+    async uploadAvatar(file) {
+        const token = localStorage.getItem("token");
+        if (!token) return { success: false, error: "No token" };
+        const payload = parseJwt(token);
+        if (!payload || !payload.sub)
+            return { success: false, error: "Invalid token payload" };
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+            const res = await fetch(`${BASE_URL}/users/${payload.sub}/avatar`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
+            if (!res.ok) {
+                const err = await res
+                    .json()
+                    .catch(() => ({ detail: res.statusText }));
+                return {
+                    success: false,
+                    error: err.detail || "Failed to upload avatar",
+                };
+            }
+            const user = await res.json();
+            return { success: true, data: user };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async updatePassword(currentPassword, newPassword) {
+        const token = localStorage.getItem("token");
+        if (!token) return { success: false, error: "No token" };
+        const payload = parseJwt(token);
+        if (!payload || !payload.sub)
+            return { success: false, error: "Invalid token payload" };
+        const formData = new FormData();
+        formData.append("current_password", currentPassword);
+        formData.append("new_password", newPassword);
+        try {
+            const res = await fetch(
+                `${BASE_URL}/users/${payload.sub}/password`,
+                {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData,
+                },
+            );
+            if (!res.ok) {
+                const err = await res
+                    .json()
+                    .catch(() => ({ detail: res.statusText }));
+                return {
+                    success: false,
+                    error: err.detail || "Failed to update password",
+                };
+            }
+            const user = await res.json();
+            return { success: true, data: user };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async updateVerification(emailVerified, phoneVerified) {
+        const token = localStorage.getItem("token");
+        if (!token) return { success: false, error: "No token" };
+        const payload = parseJwt(token);
+        if (!payload || !payload.sub)
+            return { success: false, error: "Invalid token payload" };
+        const formData = new FormData();
+        formData.append("email_verified", emailVerified);
+        formData.append("phone_verified", phoneVerified);
+        try {
+            const res = await fetch(`${BASE_URL}/users/${payload.sub}/verify`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
+            if (!res.ok) {
+                const err = await res
+                    .json()
+                    .catch(() => ({ detail: res.statusText }));
+                return {
+                    success: false,
+                    error: err.detail || "Failed to update verification",
+                };
+            }
+            const user = await res.json();
+            return { success: true, data: user };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async softDeleteAccount() {
+        const token = localStorage.getItem("token");
+        if (!token) return { success: false, error: "No token" };
+        const payload = parseJwt(token);
+        if (!payload || !payload.sub)
+            return { success: false, error: "Invalid token payload" };
+        try {
+            const res = await fetch(`${BASE_URL}/users/${payload.sub}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) {
+                const err = await res
+                    .json()
+                    .catch(() => ({ detail: res.statusText }));
+                return {
+                    success: false,
+                    error: err.detail || "Failed to delete account",
+                };
+            }
+            const user = await res.json();
+            return { success: true, data: user };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
     },
 };
