@@ -157,7 +157,6 @@ const handleClickOutside = (event) => {
 const fetchProfile = async () => {
     loading.value = true;
     error.value = "";
-    debugger;
     if (authStore.user?.avatar_url) {
         loading.value = false;
         return;
