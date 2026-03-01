@@ -118,6 +118,26 @@
 
                 <div class="card">
                     <h2 class="text-xl font-semibold mb-6 text-gray-900">
+                        Roles & Permissions
+                    </h2>
+                    <div class="mb-4">
+                        <div class="font-medium text-gray-800 mb-1">Roles:</div>
+                        <div v-if="authStore.roles.length > 0">
+                            <span v-for="role in authStore.roles" :key="role" class="badge badge-primary mr-2">{{ role }}</span>
+                        </div>
+                        <div v-else class="text-gray-500">No roles assigned.</div>
+                    </div>
+                    <div>
+                        <div class="font-medium text-gray-800 mb-1">Permissions:</div>
+                        <div v-if="authStore.permissions.length > 0">
+                            <span v-for="perm in authStore.permissions" :key="perm" class="badge badge-secondary mr-2">{{ perm }}</span>
+                        </div>
+                        <div v-else class="text-gray-500">No permissions assigned.</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-6 text-gray-900">
                         Verification Status
                     </h2>
 

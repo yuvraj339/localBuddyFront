@@ -89,6 +89,15 @@
                     >
                         Analytics
                     </button>
+                    <router-link
+                        to="/admin/roles-permissions"
+                        :class="[
+                            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                            'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                        ]"
+                    >
+                        Roles & Permissions
+                    </router-link>
                 </nav>
             </div>
 

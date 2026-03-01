@@ -24,15 +24,49 @@ export const useHelperStore = defineStore("helper", {
     },
 
     actions: {
+        async fetchHelperProfile(userId) {
+            this.loading = true;
+            this.error = null;
+            try {
+                const response = await api.getHelperProfile(userId);
+                if (response.success) {
+                    this.currentHelper = response.data;
+                } else {
+                    this.error = response.error;
+                }
+            } catch (error) {
+                this.error = error.message;
+            } finally {
+                this.loading = false;
+            }
+        },
         async fetchHelpers() {
             this.loading = true;
             this.error = null;
-
             try {
                 const response = await api.getHelpers(this.filters);
-
                 if (response.success) {
-                    this.helpers = response.data;
+                    // Fetch reviews for each helper and compute rating/reviewCount
+                    const helpers = response.data;
+                    const helpersWithReviews = await Promise.all(
+                        helpers.map(async (helper) => {
+                            const reviewsResp = await api.fetchReviews({ helperId: helper.id });
+                            let rating = null;
+                            let reviewCount = 0;
+                            let reviews = [];
+                            if (reviewsResp.success && Array.isArray(reviewsResp.data)) {
+                                reviews = reviewsResp.data;
+                                reviewCount = reviews.length;
+                                if (reviewCount > 0) {
+                                    rating = (
+                                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewCount
+                                    ).toFixed(2);
+                                }
+                            }
+                            return { ...helper, rating, reviewCount, reviews };
+                        })
+                    );
+                    this.helpers = helpersWithReviews;
                 } else {
                     this.error = response.error;
                 }
@@ -46,12 +80,25 @@ export const useHelperStore = defineStore("helper", {
         async fetchHelper(id) {
             this.loading = true;
             this.error = null;
-
             try {
                 const response = await api.getHelper(id);
-
                 if (response.success) {
-                    this.currentHelper = response.data;
+                    const helper = response.data;
+                    // Fetch reviews for this helper
+                    const reviewsResp = await api.fetchReviews({ helperId: helper.id });
+                    let rating = null;
+                    let reviewCount = 0;
+                    let reviews = [];
+                    if (reviewsResp.success && Array.isArray(reviewsResp.data)) {
+                        reviews = reviewsResp.data;
+                        reviewCount = reviews.length;
+                        if (reviewCount > 0) {
+                            rating = (
+                                reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewCount
+                            ).toFixed(2);
+                        }
+                    }
+                    this.currentHelper = { ...helper, rating, reviewCount, reviews };
                 } else {
                     this.error = response.error;
                 }

@@ -35,61 +35,112 @@ function parseJwt(token) {
 
 export const api = {
     async getHelpers(filters = {}) {
-        await delay(500);
-        let helpers = [...mockHelpers];
-
-        if (filters.category) {
-            helpers = helpers.filter((h) =>
-                h.categories.some((c) =>
-                    c.toLowerCase().includes(filters.category.toLowerCase()),
-                ),
+        try {
+            const params = new URLSearchParams();
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== null && value !== "") params.append(key, value);
+            });
+            const res = await fetch(
+                `${BASE_URL}/api/v1/helpers?${params.toString()}`,
             );
-        }
-
-        if (filters.minRate) {
-            helpers = helpers.filter((h) => h.hourlyRate >= filters.minRate);
-        }
-
-        if (filters.maxRate) {
-            helpers = helpers.filter((h) => h.hourlyRate <= filters.maxRate);
-        }
-
-        if (filters.minRating) {
-            helpers = helpers.filter((h) => h.rating >= filters.minRating);
-        }
-
-        if (filters.search) {
-            const searchLower = filters.search.toLowerCase();
-            helpers = helpers.filter(
-                (h) =>
-                    h.name.toLowerCase().includes(searchLower) ||
-                    h.bio.toLowerCase().includes(searchLower) ||
-                    h.skills.some((s) => s.toLowerCase().includes(searchLower)),
-            );
-        }
-
-        return {
-            success: true,
-            data: helpers,
-            total: helpers.length,
-        };
-    },
-
-    async getHelper(id) {
-        await delay(300);
-        const helper = mockHelpers.find((h) => h.id === parseInt(id));
-
-        if (!helper) {
+            if (!res.ok) throw new Error("Backend error");
+            const data = await res.json();
+            return { success: true, data, total: data.length };
+        } catch (e) {
+            // fallback to mock
+            await delay(500);
+            let helpers = [...mockHelpers];
+            // ...existing filter logic from above...
+            if (filters.category) {
+                helpers = helpers.filter((h) =>
+                    h.categories.some((c) =>
+                        c
+                            .toLowerCase()
+                            .includes(filters.category.toLowerCase()),
+                    ),
+                );
+            }
+            if (filters.minRate) {
+                helpers = helpers.filter(
+                    (h) => h.hourlyRate >= filters.minRate,
+                );
+            }
+            if (filters.maxRate) {
+                helpers = helpers.filter(
+                    (h) => h.hourlyRate <= filters.maxRate,
+                );
+            }
+            if (filters.minRating) {
+                helpers = helpers.filter((h) => h.rating >= filters.minRating);
+            }
+            if (filters.search) {
+                const searchLower = filters.search.toLowerCase();
+                helpers = helpers.filter(
+                    (h) =>
+                        h.name.toLowerCase().includes(searchLower) ||
+                        h.bio.toLowerCase().includes(searchLower) ||
+                        h.skills.some((s) =>
+                            s.toLowerCase().includes(searchLower),
+                        ),
+                );
+            }
             return {
-                success: false,
-                error: "Helper not found",
+                success: true,
+                data: helpers,
+                total: helpers.length,
             };
         }
-
-        return {
-            success: true,
-            data: helper,
-        };
+    },
+    async getUserRoles(userId) {
+        try {
+            const res = await fetch(`${BASE_URL}/api/v1/users/${userId}/roles`);
+            if (!res.ok) throw new Error("Failed to fetch roles");
+            const data = await res.json();
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+    async getUserPermissions(userId) {
+        try {
+            const res = await fetch(
+                `${BASE_URL}/api/v1/users/${userId}/permissions`,
+            );
+            if (!res.ok) throw new Error("Failed to fetch permissions");
+            const data = await res.json();
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+    async getHelper(id) {
+        try {
+            const res = await fetch(`${BASE_URL}/api/v1/helpers/${id}`);
+            if (!res.ok) throw new Error("Backend error");
+            const data = await res.json();
+            return { success: true, data };
+        } catch (e) {
+            await delay(300);
+            const helper = mockHelpers.find((h) => h.id === parseInt(id));
+            if (!helper) {
+                return { success: false, error: "Helper not found" };
+            }
+            return { success: true, data: helper };
+        }
+    },
+    async getHelperProfile(userId) {
+        try {
+            const res = await fetch(
+                `${BASE_URL}/api/v1/helpers/user/${userId}`,
+            );
+            if (!res.ok) throw new Error("Backend error");
+            const data = await res.json();
+            return { success: true, data };
+        } catch (e) {
+            // fallback to mock
+            await delay(200);
+            return { success: true, data: mockHelperProfile };
+        }
     },
 
     async getCategories() {
@@ -406,13 +457,45 @@ export const api = {
         }
     },
 
-    async submitReview(bookingId, reviewData) {
-        await delay(400);
-        return {
-            success: true,
-            data: { bookingId, ...reviewData },
-            message: "Review submitted successfully",
-        };
+    async fetchReviews({ helperId, userId, bookingId } = {}) {
+        try {
+            const params = new URLSearchParams();
+            if (helperId) params.append("helper_id", helperId);
+            if (userId) params.append("user_id", userId);
+            if (bookingId) params.append("booking_id", bookingId);
+            const res = await fetch(
+                `${BASE_URL}/api/v1/reviews?${params.toString()}`,
+            );
+            if (!res.ok) throw new Error("Failed to fetch reviews");
+            const data = await res.json();
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async submitReview(reviewData) {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${BASE_URL}/api/v1/reviews/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify(reviewData),
+            });
+            const data = await res.json();
+            if (!res.ok)
+                throw new Error(data.detail || "Failed to submit review");
+            return {
+                success: true,
+                data,
+                message: "Review submitted successfully",
+            };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
     },
 
     async updateAvailability(availability) {
@@ -588,6 +671,183 @@ export const api = {
             }
             const user = await res.json();
             return { success: true, data: user };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    // ============= ROLES & PERMISSIONS MANAGEMENT =============
+    async getRoles() {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${BASE_URL}/api/v1/roles`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            if (!res.ok) throw new Error("Failed to fetch roles");
+            const data = await res.json();
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async createRole(roleData) {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${BASE_URL}/api/v1/role`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify(roleData),
+            });
+            const data = await res.json();
+            if (!res.ok)
+                throw new Error(data.detail || "Failed to create role");
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async updateRole(roleId, roleData) {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${BASE_URL}/api/v1/role/${roleId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify(roleData),
+            });
+            const data = await res.json();
+            if (!res.ok)
+                throw new Error(data.detail || "Failed to update role");
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async deleteRole(roleId) {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${BASE_URL}/api/v1/role/${roleId}`, {
+                method: "DELETE",
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            if (!res.ok) throw new Error("Failed to delete role");
+            return { success: true };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async getPermissions() {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${BASE_URL}/api/v1/permissions`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            if (!res.ok) throw new Error("Failed to fetch permissions");
+            const data = await res.json();
+            return { success: true, data, rolePermissions: [] };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async createPermission(permissionData) {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${BASE_URL}/api/v1/permission`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify(permissionData),
+            });
+            const data = await res.json();
+            if (!res.ok)
+                throw new Error(data.detail || "Failed to create permission");
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async updatePermission(permId, permissionData) {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${BASE_URL}/api/v1/permission/${permId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify(permissionData),
+            });
+            const data = await res.json();
+            if (!res.ok)
+                throw new Error(data.detail || "Failed to update permission");
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async deletePermission(permId) {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${BASE_URL}/api/v1/permission/${permId}`, {
+                method: "DELETE",
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            if (!res.ok) throw new Error("Failed to delete permission");
+            return { success: true };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async assignPermissionToRole(roleId, permissionId) {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${BASE_URL}/api/v1/assign_permission`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify({
+                    role_id: roleId,
+                    permission_id: permissionId,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok)
+                throw new Error(data.detail || "Failed to assign permission");
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async removePermissionFromRole(roleId, permissionId) {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(
+                `${BASE_URL}/api/v1/revoke_permission/${roleId}/${permissionId}`,
+                {
+                    method: "DELETE",
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                },
+            );
+            if (!res.ok) throw new Error("Failed to remove permission");
+            return { success: true };
         } catch (e) {
             return { success: false, error: e.message };
         }

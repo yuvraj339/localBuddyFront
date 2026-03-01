@@ -63,6 +63,12 @@ const routes = [
         component: () => import("../views/Admin.vue"),
         meta: { requiresAuth: true, role: "admin" },
     },
+    {
+        path: "/admin/roles-permissions",
+        name: "RolePermissionManagement",
+        component: () => import("../views/RolePermissionManagement.vue"),
+        meta: { requiresAuth: true, role: "admin" },
+    },
 ];
 
 const router = createRouter({
