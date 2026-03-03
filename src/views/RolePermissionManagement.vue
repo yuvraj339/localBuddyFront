@@ -454,9 +454,9 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 // Check if user is admin
-if (!authStore.hasRole("admin")) {
-    router.push("/dashboard");
-}
+// if (!authStore.hasRole("admin")) {
+//     router.push("/dashboard");
+// }
 
 const activeTab = ref("roles");
 const roles = ref([]);

@@ -93,7 +93,7 @@ export const api = {
     },
     async getUserRoles(userId) {
         try {
-            const res = await fetch(`${BASE_URL}/api/v1/users/${userId}/roles`);
+            const res = await fetch(`${BASE_URL}/api/v1/rbac/${userId}/roles`);
             if (!res.ok) throw new Error("Failed to fetch roles");
             const data = await res.json();
             return { success: true, data };
@@ -104,7 +104,7 @@ export const api = {
     async getUserPermissions(userId) {
         try {
             const res = await fetch(
-                `${BASE_URL}/api/v1/users/${userId}/permissions`,
+                `${BASE_URL}/api/v1/rbac/${userId}/permissions`,
             );
             if (!res.ok) throw new Error("Failed to fetch permissions");
             const data = await res.json();
@@ -680,7 +680,7 @@ export const api = {
     async getRoles() {
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${BASE_URL}/api/v1/roles`, {
+            const res = await fetch(`${BASE_URL}/api/v1/rbac/roles`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
             if (!res.ok) throw new Error("Failed to fetch roles");
@@ -694,7 +694,7 @@ export const api = {
     async createRole(roleData) {
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${BASE_URL}/api/v1/role`, {
+            const res = await fetch(`${BASE_URL}/api/v1/rbac/role`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -714,7 +714,7 @@ export const api = {
     async updateRole(roleId, roleData) {
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${BASE_URL}/api/v1/role/${roleId}`, {
+            const res = await fetch(`${BASE_URL}/api/v1/rbac/role/${roleId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -734,7 +734,7 @@ export const api = {
     async deleteRole(roleId) {
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${BASE_URL}/api/v1/role/${roleId}`, {
+            const res = await fetch(`${BASE_URL}/api/v1/rbac/role/${roleId}`, {
                 method: "DELETE",
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
@@ -748,7 +748,7 @@ export const api = {
     async getPermissions() {
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${BASE_URL}/api/v1/permissions`, {
+            const res = await fetch(`${BASE_URL}/api/v1/rbac/permissions`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
             if (!res.ok) throw new Error("Failed to fetch permissions");
@@ -762,7 +762,7 @@ export const api = {
     async createPermission(permissionData) {
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${BASE_URL}/api/v1/permission`, {
+            const res = await fetch(`${BASE_URL}/api/v1/rbac/permission`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -782,14 +782,17 @@ export const api = {
     async updatePermission(permId, permissionData) {
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${BASE_URL}/api/v1/permission/${permId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            const res = await fetch(
+                `${BASE_URL}/api/v1/rbac/permission/${permId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    },
+                    body: JSON.stringify(permissionData),
                 },
-                body: JSON.stringify(permissionData),
-            });
+            );
             const data = await res.json();
             if (!res.ok)
                 throw new Error(data.detail || "Failed to update permission");
@@ -802,10 +805,13 @@ export const api = {
     async deletePermission(permId) {
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${BASE_URL}/api/v1/permission/${permId}`, {
-                method: "DELETE",
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
-            });
+            const res = await fetch(
+                `${BASE_URL}/api/v1/rbac/permission/${permId}`,
+                {
+                    method: "DELETE",
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                },
+            );
             if (!res.ok) throw new Error("Failed to delete permission");
             return { success: true };
         } catch (e) {
@@ -816,17 +822,20 @@ export const api = {
     async assignPermissionToRole(roleId, permissionId) {
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${BASE_URL}/api/v1/assign_permission`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            const res = await fetch(
+                `${BASE_URL}/api/v1/rbac/assign_permission`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    },
+                    body: JSON.stringify({
+                        role_id: roleId,
+                        permission_id: permissionId,
+                    }),
                 },
-                body: JSON.stringify({
-                    role_id: roleId,
-                    permission_id: permissionId,
-                }),
-            });
+            );
             const data = await res.json();
             if (!res.ok)
                 throw new Error(data.detail || "Failed to assign permission");
