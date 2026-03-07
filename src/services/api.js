@@ -91,20 +91,20 @@ export const api = {
             };
         }
     },
-    async getUserRoles(userId) {
-        try {
-            const res = await fetch(`${BASE_URL}/api/v1/rbac/${userId}/roles`);
-            if (!res.ok) throw new Error("Failed to fetch roles");
-            const data = await res.json();
-            return { success: true, data };
-        } catch (e) {
-            return { success: false, error: e.message };
-        }
-    },
-    async getUserPermissions(userId) {
+    // async getUserRolesPermissions(userId) {
+    //     try {
+    //         const res = await fetch(`${BASE_URL}/api/v1/rbac/${userId}/roles`);
+    //         if (!res.ok) throw new Error("Failed to fetch roles");
+    //         const data = await res.json();
+    //         return { success: true, data };
+    //     } catch (e) {
+    //         return { success: false, error: e.message };
+    //     }
+    // },
+    async getUserPermissions(role) {
         try {
             const res = await fetch(
-                `${BASE_URL}/api/v1/rbac/${userId}/permissions`,
+                `${BASE_URL}/api/v1/rbac/roles/${role}/permissions`,
             );
             if (!res.ok) throw new Error("Failed to fetch permissions");
             const data = await res.json();
@@ -323,16 +323,16 @@ export const api = {
                     .catch(() => ({ detail: res.statusText }));
                 return { success: false, error: err.detail || "Login failed" };
             }
-
             const json = await res.json();
             const token = json.access_token;
+            const userRole = json.user_roles;
             const payload = parseJwt(token);
             const userId = payload?.sub || null;
 
             return {
                 success: true,
                 token,
-                data: userId ? { id: userId } : null,
+                data: userId ? { id: userId, roles: userRole } : null,
             };
         } catch (error) {
             return { success: false, error: error.message || "Network error" };
@@ -392,7 +392,7 @@ export const api = {
             return { success: false, error: "Invalid token payload" };
         }
         try {
-            const res = await fetch(`${BASE_URL}/users/${payload.sub}`, {
+            const res = await fetch(`${BASE_URL}/api/v1/users/${payload.sub}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (!res.ok) {
@@ -429,7 +429,7 @@ export const api = {
             return { success: false, error: "Invalid token payload" };
         }
         try {
-            const res = await fetch(`${BASE_URL}/users/${payload.sub}`, {
+            const res = await fetch(`${BASE_URL}/api/v1/users/${payload.sub}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -563,11 +563,14 @@ export const api = {
         const formData = new FormData();
         formData.append("file", file);
         try {
-            const res = await fetch(`${BASE_URL}/users/${payload.sub}/avatar`, {
-                method: "POST",
-                headers: { Authorization: `Bearer ${token}` },
-                body: formData,
-            });
+            const res = await fetch(
+                `${BASE_URL}/api/v1/users/${payload.sub}/avatar`,
+                {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData,
+                },
+            );
             if (!res.ok) {
                 const err = await res
                     .json()
@@ -595,7 +598,7 @@ export const api = {
         formData.append("new_password", newPassword);
         try {
             const res = await fetch(
-                `${BASE_URL}/users/${payload.sub}/password`,
+                `${BASE_URL}/api/v1/users/${payload.sub}/password`,
                 {
                     method: "POST",
                     headers: { Authorization: `Bearer ${token}` },
@@ -628,11 +631,14 @@ export const api = {
         formData.append("email_verified", emailVerified);
         formData.append("phone_verified", phoneVerified);
         try {
-            const res = await fetch(`${BASE_URL}/users/${payload.sub}/verify`, {
-                method: "POST",
-                headers: { Authorization: `Bearer ${token}` },
-                body: formData,
-            });
+            const res = await fetch(
+                `${BASE_URL}/api/v1/users/${payload.sub}/verify`,
+                {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: formData,
+                },
+            );
             if (!res.ok) {
                 const err = await res
                     .json()
@@ -656,7 +662,7 @@ export const api = {
         if (!payload || !payload.sub)
             return { success: false, error: "Invalid token payload" };
         try {
-            const res = await fetch(`${BASE_URL}/users/${payload.sub}`, {
+            const res = await fetch(`${BASE_URL}/api/v1/users/${payload.sub}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` },
             });

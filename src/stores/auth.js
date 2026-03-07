@@ -54,7 +54,7 @@ export const useAuthStore = defineStore("auth", {
                     localStorage.setItem("token", response.token);
                     localStorage.setItem("user", JSON.stringify(response.data));
                     // Fetch roles and permissions
-                    await this.fetchRolesAndPermissions();
+                    // await this.fetchRolesAndPermissions();
                     return true;
                 } else {
                     this.error = response.error || "Registration failed";
@@ -69,12 +69,15 @@ export const useAuthStore = defineStore("auth", {
         },
         async fetchRolesAndPermissions() {
             if (!this.user?.id) return;
-            const [rolesResp, permsResp] = await Promise.all([
-                api.getUserRoles(this.user.id),
-                api.getUserPermissions(this.user.id),
-            ]);
-            this.roles = rolesResp.success ? rolesResp.data : [];
-            this.permissions = permsResp.success ? permsResp.data : [];
+            const permsResp = await new Promise(async (resolve) => {
+                const perms = await api.getUserPermissions(
+                    this.user.roles[0].id,
+                );
+                resolve([perms]);
+            });
+            // api.getUserRolesPermissions(this.user.id),
+            // this.roles = rolesResp.success ? rolesResp.data : [];
+            this.permissions = permsResp[0].success ? permsResp[0].data : [];
         },
 
         logout() {
