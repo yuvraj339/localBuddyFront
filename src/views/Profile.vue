@@ -12,7 +12,7 @@
                 <div class="card">
                     <div class="flex items-center space-x-6 mb-6">
                         <img
-                            :src="avatarSrc"
+                            :src="avatarSrc(authStore.user?.avatar_url)"
                             :alt="authStore.user?.full_name"
                             class="w-24 h-24 rounded-full object-cover border-4 border-primary-100"
                         />
@@ -92,20 +92,77 @@
                                     disabled
                                 />
                             </div>
+
+                            <div>
+                                <label
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                >
+                                    Location
+                                </label>
+                                <input
+                                    v-model="profileForm.location"
+                                    type="text"
+                                    class="input"
+                                    placeholder="Your city/area"
+                                />
+                            </div>
                         </div>
 
-                        <div v-if="authStore.isHelper">
-                            <label
-                                class="block text-sm font-medium text-gray-700 mb-2"
-                            >
-                                Bio
-                            </label>
-                            <textarea
-                                v-model="profileForm.bio"
-                                rows="4"
-                                class="input"
-                                placeholder="Tell customers about yourself..."
-                            ></textarea>
+                        <div v-if="authStore.hasRole('helper')">
+                            <div>
+                                <label
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                >
+                                    Bio
+                                </label>
+                                <textarea
+                                    v-model="profileForm.bio"
+                                    rows="4"
+                                    class="input"
+                                    placeholder="Tell customers about yourself..."
+                                ></textarea>
+                            </div>
+                            <!-- <div
+                                v-if="authStore.hasRole('helper')"
+                                class="card"
+                            > -->
+                            <!-- <h2
+                                    class="text-xl font-semibold mb-6 text-gray-900"
+                                >
+                                    Category Settings
+                                </h2> -->
+
+                            <!-- <div class="space-y-6"> -->
+                            <div class="mt-4">
+                                <label
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                >
+                                    Service Categories
+                                </label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <label
+                                        v-for="category in availableCategories"
+                                        :key="category"
+                                        class="flex items-center space-x-2"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            :checked="
+                                                profileForm.categories?.includes(
+                                                    category,
+                                                )
+                                            "
+                                            @change="toggleCategory(category)"
+                                            class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                        />
+                                        <span class="text-sm text-gray-700">{{
+                                            category
+                                        }}</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <!-- </div> -->
+                            <!-- </div> -->
                         </div>
 
                         <div class="flex justify-end">
@@ -120,19 +177,42 @@
                     <h2 class="text-xl font-semibold mb-6 text-gray-900">
                         Roles & Permissions
                     </h2>
-                    <div class="mb-4">
+                    <div class="space-y-4 mb-3">
                         <div class="font-medium text-gray-800 mb-1">Roles:</div>
                         <div v-if="authStore.roles.length > 0">
-                            <span v-for="role in authStore.roles" :key="role" class="badge badge-primary mr-2">{{ role }}</span>
+                            <span
+                                v-for="role in authStore.roles"
+                                :key="role"
+                                class="badge badge-primary mr-2 capitalize"
+                                >{{ role.name }}
+                            </span>
                         </div>
-                        <div v-else class="text-gray-500">No roles assigned.</div>
+                        <div v-else class="text-gray-500">
+                            No roles assigned.
+                        </div>
                     </div>
                     <div>
-                        <div class="font-medium text-gray-800 mb-1">Permissions:</div>
-                        <div v-if="authStore.permissions.length > 0">
-                            <span v-for="perm in authStore.permissions" :key="perm" class="badge badge-secondary mr-2">{{ perm }}</span>
+                        <div class="font-medium text-gray-800 mb-1">
+                            Permissions:
                         </div>
-                        <div v-else class="text-gray-500">No permissions assigned.</div>
+                        <div
+                            v-if="authStore.permissions"
+                            class="flex flex-wrap gap-3 mt-2"
+                        >
+                            <span
+                                v-for="perm in authStore.getPermissions(
+                                    authStore.roles[0]?.id,
+                                )"
+                                :key="perm.name"
+                                class="badge badge-primary capitalize cursor-pointer"
+                                :title="perm.description"
+                            >
+                                {{ perm.name }}
+                            </span>
+                        </div>
+                        <div v-else class="text-gray-500">
+                            No permissions assigned.
+                        </div>
                     </div>
                 </div>
 
@@ -252,12 +332,13 @@
                     </div>
                 </div>
 
-                <div v-if="authStore.isHelper" class="card">
+                <div v-if="authStore.hasRole('helper')" class="card">
                     <h2 class="text-xl font-semibold mb-6 text-gray-900">
-                        Helper Settings
+                        Enhanced Helper Settings
                     </h2>
 
                     <div class="space-y-6">
+                        <!-- Hourly Rate -->
                         <div>
                             <label
                                 class="block text-sm font-medium text-gray-700 mb-2"
@@ -265,48 +346,139 @@
                                 Hourly Rate (₹)
                             </label>
                             <input
-                                v-model.number="profileForm.hourly_rate"
+                                v-model.number="helperProfileForm.hourly_rate"
                                 type="number"
                                 min="100"
+                                step="10"
                                 class="input"
+                                placeholder="Enter hourly rate"
                             />
                         </div>
 
+                        <!-- Availability -->
                         <div>
                             <label
                                 class="block text-sm font-medium text-gray-700 mb-4"
                             >
-                                Service Categories
+                                Availability
                             </label>
                             <div class="grid grid-cols-2 gap-3">
                                 <label
-                                    v-for="category in availableCategories"
-                                    :key="category"
+                                    v-for="day in availableDays"
+                                    :key="day"
                                     class="flex items-center space-x-2"
                                 >
                                     <input
                                         type="checkbox"
                                         :checked="
-                                            profileForm.categories?.includes(
-                                                category,
+                                            helperProfileForm.availability?.includes(
+                                                day,
                                             )
                                         "
-                                        @change="toggleCategory(category)"
+                                        @change="toggleAvailability(day)"
                                         class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                                     />
                                     <span class="text-sm text-gray-700">{{
-                                        category
+                                        day
                                     }}</span>
                                 </label>
                             </div>
                         </div>
 
+                        <!-- Skills -->
+                        <div>
+                            <label
+                                class="block text-sm font-medium text-gray-700 mb-2"
+                            >
+                                Skills
+                            </label>
+                            <textarea
+                                v-model="helperProfileForm.skills_text"
+                                rows="3"
+                                class="input"
+                                placeholder="Enter skills separated by commas (e.g., Cooking, Cleaning, Laundry)"
+                            ></textarea>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Separate multiple skills with commas
+                            </p>
+                        </div>
+
+                        <!-- Availability Status -->
+                        <div
+                            class="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg"
+                        >
+                            <div class="flex-1">
+                                <label
+                                    class="block text-sm font-medium text-gray-700 mb-1"
+                                >
+                                    Currently Available for Bookings
+                                </label>
+                                <p class="text-xs text-gray-600">
+                                    Toggle to show/hide your profile from
+                                    searches
+                                </p>
+                            </div>
+                            <div
+                                class="relative inline-block w-12 h-6 bg-gray-300 rounded-full cursor-pointer transition"
+                                :class="
+                                    helperProfileForm.is_available
+                                        ? 'bg-green-500'
+                                        : 'bg-gray-300'
+                                "
+                                @click="
+                                    helperProfileForm.is_available =
+                                        !helperProfileForm.is_available
+                                "
+                            >
+                                <div
+                                    class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition transform"
+                                    :class="{
+                                        'translate-x-6':
+                                            helperProfileForm.is_available,
+                                    }"
+                                ></div>
+                            </div>
+                        </div>
+
+                        <!-- Status Message -->
+                        <div
+                            v-if="helperProfileForm.is_available"
+                            class="p-3 bg-green-50 text-green-700 text-sm rounded-lg"
+                        >
+                            ✓ Your profile is visible to customers
+                        </div>
+                        <div
+                            v-else
+                            class="p-3 bg-yellow-50 text-yellow-700 text-sm rounded-lg"
+                        >
+                            ⚠ Your profile is hidden from customer searches
+                        </div>
+
+                        <!-- Error/Success Messages -->
+                        <div
+                            v-if="helperProfileError"
+                            class="text-danger-600 text-sm p-3 bg-danger-50 rounded"
+                        >
+                            {{ helperProfileError }}
+                        </div>
+                        <div
+                            v-if="helperProfileSuccess"
+                            class="text-success-600 text-sm p-3 bg-success-50 rounded"
+                        >
+                            {{ helperProfileSuccess }}
+                        </div>
+
                         <div class="flex justify-end">
                             <button
-                                @click="updateProfile"
+                                @click="updateHelperProfile"
+                                :disabled="loading"
                                 class="btn btn-primary"
                             >
-                                Save Settings
+                                {{
+                                    loading
+                                        ? "Saving..."
+                                        : "Save Helper Settings"
+                                }}
                             </button>
                         </div>
                     </div>
@@ -395,17 +567,21 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted, computed } from "vue";
+import { reactive, ref, onMounted } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { api } from "../services/api";
+import { avatarSrc } from "../utils/util";
 
 const authStore = useAuthStore();
 const loading = ref(false);
 const error = ref("");
 const avatarInput = ref(null);
-const newAvatarURL = ref(null);
 const passwordError = ref("");
 const passwordSuccess = ref("");
+const helperProfileError = ref("");
+const helperProfileSuccess = ref("");
+const helperProfileId = ref(null);
+
 const triggerAvatarInput = () => {
     avatarInput.value && avatarInput.value.click();
 };
@@ -425,7 +601,7 @@ const onAvatarChange = async (e) => {
     loading.value = true;
     const resp = await api.uploadAvatar(file);
     if (resp.success) {
-        newAvatarURL.value = resp.data;
+        authStore.updateUserState({ avatar_url: resp.data });
         alert("Photo updated!");
     } else {
         alert(resp.error || "Failed to update photo");
@@ -437,11 +613,19 @@ const profileForm = reactive({
     full_name: "",
     email: "",
     phone: "",
+    location: "",
     bio: "",
-    hourly_rate: 0,
     categories: [],
     is_active: false,
     is_verified: false,
+});
+
+const helperProfileForm = reactive({
+    hourly_rate: 0,
+    skills_text: "",
+    skills: [],
+    availability: [],
+    is_available: true,
 });
 
 const passwordForm = reactive({
@@ -459,47 +643,78 @@ const availableCategories = [
     "Pet Care",
 ];
 
+const availableDays = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+];
+
 const fetchProfile = async () => {
     loading.value = true;
     error.value = "";
-    if (authStore.user?.email) {
-        updateProfileForm(authStore.user);
-    } else {
-        const resp = await api.getUserProfile();
-        if (resp.success) {
-            authStore.user = resp.data;
+    try {
+        if (authStore.user?.email) {
             updateProfileForm(authStore.user);
         } else {
-            error.value = resp.error || "Failed to load profile";
+            const resp = await api.getUserProfile();
+            if (resp.success) {
+                authStore.user = resp.data;
+                updateProfileForm(authStore.user);
+            } else {
+                error.value = resp.error || "Failed to load profile";
+            }
         }
+
+        // Fetch helper profile if user is a helper
+        if (authStore.hasRole("helper")) {
+            await fetchHelperProfile();
+        }
+    } catch (e) {
+        error.value = e.message || "Failed to load profile";
+    } finally {
+        loading.value = false;
     }
-    loading.value = false;
+};
+
+const fetchHelperProfile = async () => {
+    try {
+        const userId = authStore.user?.id;
+        if (!userId) return;
+
+        const resp = await api.getHelperProfileByUserId(userId);
+        if (resp.success && resp.data) {
+            const profile = resp.data;
+            helperProfileId.value = profile.id;
+            helperProfileForm.hourly_rate = profile.hourly_rate || 0;
+            helperProfileForm.skills = profile.skills || [];
+            helperProfileForm.skills_text = Array.isArray(profile.skills)
+                ? profile.skills.join(", ")
+                : profile.skills || "";
+            helperProfileForm.availability = profile.availability || [];
+            helperProfileForm.is_available = profile.is_available !== false;
+        }
+    } catch (e) {
+        console.error("Failed to fetch helper profile:", e);
+    }
 };
 
 const updateProfileForm = (user) => {
     profileForm.full_name = user.full_name || "";
     profileForm.email = user.email || "";
     profileForm.phone = user.phone || "";
+    profileForm.location = user.location || "";
     profileForm.bio = user.bio || "";
-    profileForm.hourly_rate = user.hourly_rate || 250;
+    // profileForm.hourly_rate = user.hourly_rate || 250;
     profileForm.categories = user.categories || [];
     profileForm.is_active = user.is_active || false;
     profileForm.is_verified = user.is_verified || false;
 };
 onMounted(fetchProfile);
 
-const avatarSrc = computed(() => {
-    const baseUrl = "http://localhost:8000";
-    const avatarUrl = newAvatarURL.value || authStore.user?.avatar_url;
-
-    // If avatar_url exists, prepend base URL
-    if (avatarUrl) {
-        return `${baseUrl}${avatarUrl}`;
-    }
-
-    // Fallback to default avatar
-    return `${baseUrl}/default-avatar.png`;
-}); // refetch profile when user data changes
 const updateProfile = async () => {
     loading.value = true;
     error.value = "";
@@ -507,8 +722,8 @@ const updateProfile = async () => {
         full_name: profileForm.full_name,
         email: profileForm.email,
         phone: profileForm.phone,
+        location: profileForm.location,
         bio: profileForm.bio,
-        hourly_rate: profileForm.hourly_rate,
         categories: profileForm.categories,
         is_active: profileForm.is_active,
         is_verified: profileForm.is_verified,
@@ -518,6 +733,44 @@ const updateProfile = async () => {
         alert("Profile updated successfully!");
     } else {
         error.value = resp.error || "Failed to update profile";
+    }
+    loading.value = false;
+};
+
+const updateHelperProfile = async () => {
+    debugger;
+    if (!helperProfileId.value) {
+        helperProfileError.value = "Helper profile not found";
+        return;
+    }
+
+    loading.value = true;
+    helperProfileError.value = "";
+    helperProfileSuccess.value = "";
+
+    // Convert skills_text to array
+    const skillsArray = helperProfileForm.skills_text
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
+    const resp = await api.updateHelperProfile(helperProfileId.value, {
+        hourly_rate: helperProfileForm.hourly_rate || 250,
+        skills: skillsArray,
+        availability: helperProfileForm.availability,
+        is_available: helperProfileForm.is_available,
+    });
+
+    if (resp.success) {
+        helperProfileForm.skills = skillsArray;
+        helperProfileSuccess.value =
+            resp.message || "Helper settings updated successfully!";
+        setTimeout(() => {
+            helperProfileSuccess.value = "";
+        }, 3000);
+    } else {
+        helperProfileError.value =
+            resp.error || "Failed to update helper settings";
     }
     loading.value = false;
 };
@@ -584,6 +837,15 @@ const toggleCategory = (category) => {
         profileForm.categories.splice(index, 1);
     } else {
         profileForm.categories.push(category);
+    }
+};
+
+const toggleAvailability = (day) => {
+    const index = helperProfileForm.availability.indexOf(day);
+    if (index > -1) {
+        helperProfileForm.availability.splice(index, 1);
+    } else {
+        helperProfileForm.availability.push(day);
     }
 };
 

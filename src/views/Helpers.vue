@@ -136,7 +136,7 @@
                         >
                             <div class="flex items-start space-x-4">
                                 <img
-                                    :src="helper.avatar"
+                                    :src="helperAvatarSrc(helper.avatar)"
                                     :alt="helper.name"
                                     class="w-20 h-20 rounded-full object-cover border-2 border-primary-100"
                                 />
@@ -184,7 +184,7 @@
                                         <span
                                             v-for="category in helper.categories.slice(
                                                 0,
-                                                2
+                                                2,
                                             )"
                                             :key="category"
                                             class="badge badge-primary text-xs"
@@ -222,6 +222,7 @@
 import { reactive, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useHelperStore } from "../stores/helper";
+import { helperAvatarSrc } from "../utils/util";
 
 const route = useRoute();
 const helperStore = useHelperStore();
@@ -251,7 +252,7 @@ watch(
             filters.category = newCategory;
             applyFilters();
         }
-    }
+    },
 );
 
 const applyFilters = () => {

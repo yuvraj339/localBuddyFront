@@ -82,7 +82,7 @@
                                 class="flex items-center space-x-2 focus:outline-none"
                             >
                                 <img
-                                    :src="avatarSrc"
+                                    :src="avatarSrc(authStore.user?.avatar_url)"
                                     alt="Profile"
                                     class="w-10 h-10 rounded-full object-cover border-2 border-primary-200"
                                 />
@@ -118,7 +118,7 @@
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
-
+import { avatarSrc } from "../utils/util";
 const router = useRouter();
 const authStore = useAuthStore();
 import { api } from "../services/api";
@@ -134,19 +134,6 @@ const handleLogout = () => {
     showDropdown.value = false;
     router.push("/");
 };
-
-const avatarSrc = computed(() => {
-    const baseUrl = "http://localhost:8000";
-    const avatarUrl = authStore.user?.avatar_url;
-
-    // If avatar_url exists, prepend base URL
-    if (avatarUrl) {
-        return `${baseUrl}${avatarUrl}`;
-    }
-
-    // Fallback to default avatar
-    return `${baseUrl}/default-avatar.png`;
-});
 
 const handleClickOutside = (event) => {
     if (dropdown.value && !dropdown.value.contains(event.target)) {

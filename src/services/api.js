@@ -867,4 +867,57 @@ export const api = {
             return { success: false, error: e.message };
         }
     },
-};
+    // ============= HELPER PROFILE MANAGEMENT =============
+    async updateHelperProfile(profileId, helperData) {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            return { success: false, error: "No token" };
+        }
+        try {
+            const res = await fetch(
+                `${BASE_URL}/api/v1/helpers/${profileId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(helperData),
+                },
+            );
+            if (!res.ok) {
+                const err = await res
+                    .json()
+                    .catch(() => ({ detail: res.statusText }));
+                return {
+                    success: false,
+                    error: err.detail || "Failed to update helper profile",
+                };
+            }
+            const updated = await res.json();
+            return {
+                success: true,
+                data: updated,
+                message: "Helper profile updated successfully",
+            };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async getHelperProfileByUserId(userId) {
+        const token = localStorage.getItem("token");
+        try {
+            const res = await fetch(
+                `${BASE_URL}/api/v1/helpers/${userId}`,
+                {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                },
+            );
+            if (!res.ok) throw new Error("Failed to fetch helper profile");
+            const data = await res.json();
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },};

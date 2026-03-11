@@ -13,7 +13,7 @@
                     <div class="card">
                         <div class="flex items-start space-x-6">
                             <img
-                                :src="helper.avatar"
+                                :src="helperAvatarSrc(helper.avatar)"
                                 :alt="helper.name"
                                 class="w-32 h-32 rounded-full object-cover border-4 border-primary-100"
                             />
@@ -350,6 +350,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useHelperStore } from "../stores/helper";
 import { useBookingStore } from "../stores/booking";
 import { useAuthStore } from "../stores/auth";
+import { helperAvatarSrc } from "../utils/util";
 
 const route = useRoute();
 const router = useRouter();
@@ -424,7 +425,7 @@ const handleBooking = async () => {
 
     const bookingData = {
         customer_id: authStore.user.id,
-        helper_id: "ea7e8fe5-d875-4f8a-bd4a-d531df5edbac", //helper.value.id,
+        helper_id: helper.value.id,
         helper_name: helper.value.name,
         helper_avatar: helper.value.avatar,
         date: bookingForm.date,

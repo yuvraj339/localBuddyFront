@@ -105,7 +105,10 @@
                                     >({{ helper.reviewCount }})</span
                                 >
                             </div>
-                            <p class="text-center text-gray-600 text-sm mb-4">
+                            <p
+                                class="text-center text-gray-600 text-sm mb-4"
+                                v-if="helper.bio"
+                            >
                                 {{ helper.bio.substring(0, 80) }}...
                             </p>
                             <div class="text-center">

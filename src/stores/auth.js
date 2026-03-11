@@ -13,8 +13,11 @@ export const useAuthStore = defineStore("auth", {
 
     getters: {
         isAuthenticated: (state) => !!state.token,
-        hasRole: (state) => (role) => state.roles.includes(role),
+        hasRole: (state) => (role) =>
+            state.roles.filter((r) => r.name === role).length > 0,
         hasPermission: (state) => (perm) => state.permissions.includes(perm),
+        getRoles: (state) => state.roles,
+        getPermissions: (state) => (role) => state.permissions[role] || [],
     },
 
     actions: {
@@ -26,9 +29,9 @@ export const useAuthStore = defineStore("auth", {
                 if (response.success) {
                     this.token = response.token;
                     this.user = response.data;
+                    this.roles = response.data.roles || [];
                     localStorage.setItem("token", response.token);
                     localStorage.setItem("user", JSON.stringify(response.data));
-                    // Fetch roles and permissions
                     await this.fetchRolesAndPermissions();
                     return true;
                 } else {
@@ -68,7 +71,7 @@ export const useAuthStore = defineStore("auth", {
             }
         },
         async fetchRolesAndPermissions() {
-            if (!this.user?.id) return;
+            if (!this.user?.id || this.user.roles.length === 0) return;
             const permsResp = await new Promise(async (resolve) => {
                 const perms = await api.getUserPermissions(
                     this.user.roles[0].id,
@@ -78,6 +81,15 @@ export const useAuthStore = defineStore("auth", {
             // api.getUserRolesPermissions(this.user.id),
             // this.roles = rolesResp.success ? rolesResp.data : [];
             this.permissions = permsResp[0].success ? permsResp[0].data : [];
+            localStorage.setItem(
+                "permissions",
+                JSON.stringify(this.permissions),
+            );
+        },
+
+        updateUserState(newUserData) {
+            this.user = { ...this.user, ...newUserData };
+            localStorage.setItem("user", JSON.stringify(this.user));
         },
 
         logout() {
@@ -91,9 +103,13 @@ export const useAuthStore = defineStore("auth", {
 
         async loadUser() {
             const savedUser = localStorage.getItem("user");
+            const permissions = localStorage.getItem("permissions");
+            if (permissions) {
+                this.permissions = JSON.parse(permissions);
+            }
             if (savedUser) {
                 this.user = JSON.parse(savedUser);
-                await this.fetchRolesAndPermissions();
+                this.roles = this.user.roles || [];
             }
         },
     },
