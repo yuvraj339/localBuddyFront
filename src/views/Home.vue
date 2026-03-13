@@ -39,7 +39,7 @@
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div
-                        v-for="category in helperStore.categories"
+                        v-for="category in categoryStore.categories"
                         :key="category.id"
                         class="card hover:shadow-xl transition-shadow cursor-pointer"
                         @click="goToCategory(category.name)"
@@ -80,7 +80,7 @@
                     >
                         <div class="flex flex-col items-center">
                             <img
-                                :src="helper.avatar"
+                                :src="helperAvatarSrc(helper.avatar)"
                                 :alt="helper.name"
                                 class="w-24 h-24 rounded-full object-cover mb-4 border-4 border-primary-100"
                             />
@@ -195,13 +195,17 @@ import { onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import { useHelperStore } from "../stores/helper";
+import { helperAvatarSrc } from "../utils/util";
+import { useCategoryStore } from "../stores/categories";
+
+const categoryStore = useCategoryStore();
 
 const router = useRouter();
 const authStore = useAuthStore();
 const helperStore = useHelperStore();
 
 onMounted(() => {
-    helperStore.fetchCategories();
+    categoryStore.fetchCategories();
     helperStore.fetchHelpers();
 });
 

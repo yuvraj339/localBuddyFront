@@ -132,18 +132,6 @@ export const useHelperStore = defineStore("helper", {
             }
         },
 
-        async fetchCategories() {
-            try {
-                const response = await api.getCategories();
-
-                if (response.success) {
-                    this.categories = response.data;
-                }
-            } catch (error) {
-                console.error("Error fetching categories:", error);
-            }
-        },
-
         updateFilters(newFilters) {
             this.filters = { ...this.filters, ...newFilters };
             this.fetchHelpers();

@@ -68,7 +68,13 @@ const routes = [
         path: "/admin/roles-permissions",
         name: "RolePermissionManagement",
         component: () => import("../views/RolePermissionManagement.vue"),
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, adminOnly: true },
+    },
+    {
+        path: "/admin/categories",
+        name: "CategoryManagement",
+        component: () => import("../views/CategoryManagement.vue"),
+        meta: { requiresAuth: true, adminOnly: true },
     },
 ];
 
@@ -82,6 +88,15 @@ router.beforeEach((to, from, next) => {
 
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
         next("/login");
+    } else if (to.meta.adminOnly) {
+        const userRoles = authStore.user_roles?.map((r) => r.name) || [];
+        const isAdmin =
+            userRoles.includes("admin") || userRoles.includes("super_admin");
+        if (!isAdmin) {
+            next("/dashboard");
+        } else {
+            next();
+        }
     } else if (to.meta.role && authStore.user?.role !== to.meta.role) {
         next("/dashboard");
     } else {

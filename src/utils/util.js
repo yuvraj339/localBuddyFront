@@ -1,6 +1,6 @@
-import { useAuthStore } from "../stores/auth";
+// import { useAuthStore } from "../stores/auth";
 import { API_BASE_URL } from "../config/config";
-import { computed } from "vue";
+// import { computed } from "vue";
 // const authStore = useAuthStore();
 
 export const avatarSrc = (avatarUrl) => {

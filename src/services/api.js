@@ -1,7 +1,6 @@
 ﻿import {
     mockHelpers,
     mockBookings,
-    mockCategories,
     mockChats,
     mockUser,
     mockHelperProfile,
@@ -144,11 +143,17 @@ export const api = {
     },
 
     async getCategories() {
-        await delay(200);
-        return {
-            success: true,
-            data: mockCategories,
-        };
+        try {
+            const res = await fetch(`${BASE_URL}/api/v1/categories`);
+            if (!res.ok) throw new Error("Backend error");
+            const data = await res.json();
+            return {
+                success: true,
+                data,
+            };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
     },
 
     async createBooking(bookingData) {

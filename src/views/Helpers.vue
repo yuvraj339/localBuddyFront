@@ -46,7 +46,7 @@
                                 >
                                     <option value="">All Categories</option>
                                     <option
-                                        v-for="category in helperStore.categories"
+                                        v-for="category in categoryStore.categories"
                                         :key="category.id"
                                         :value="category.name"
                                     >
@@ -222,10 +222,12 @@
 import { reactive, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useHelperStore } from "../stores/helper";
+import { useCategoryStore } from "../stores/categories";
 import { helperAvatarSrc } from "../utils/util";
 
 const route = useRoute();
 const helperStore = useHelperStore();
+const categoryStore = useCategoryStore();
 
 const filters = reactive({
     search: "",
@@ -236,7 +238,7 @@ const filters = reactive({
 });
 
 onMounted(() => {
-    helperStore.fetchCategories();
+    categoryStore.fetchCategories();
     helperStore.fetchHelpers();
 
     if (route.query.category) {

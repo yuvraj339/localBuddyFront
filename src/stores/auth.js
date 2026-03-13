@@ -8,6 +8,7 @@ export const useAuthStore = defineStore("auth", {
         loading: false,
         error: null,
         roles: [],
+        user_roles: [],
         permissions: [],
     }),
 
@@ -30,8 +31,14 @@ export const useAuthStore = defineStore("auth", {
                     this.token = response.token;
                     this.user = response.data;
                     this.roles = response.data.roles || [];
+                    this.user_roles =
+                        response.user_roles || response.data.roles || [];
                     localStorage.setItem("token", response.token);
                     localStorage.setItem("user", JSON.stringify(response.data));
+                    localStorage.setItem(
+                        "user_roles",
+                        JSON.stringify(this.user_roles),
+                    );
                     await this.fetchRolesAndPermissions();
                     return true;
                 } else {
@@ -96,16 +103,22 @@ export const useAuthStore = defineStore("auth", {
             this.user = null;
             this.token = null;
             this.roles = [];
+            this.user_roles = [];
             this.permissions = [];
             localStorage.removeItem("token");
             localStorage.removeItem("user");
+            localStorage.removeItem("user_roles");
         },
 
         async loadUser() {
             const savedUser = localStorage.getItem("user");
+            const savedUserRoles = localStorage.getItem("user_roles");
             const permissions = localStorage.getItem("permissions");
             if (permissions) {
                 this.permissions = JSON.parse(permissions);
+            }
+            if (savedUserRoles) {
+                this.user_roles = JSON.parse(savedUserRoles);
             }
             if (savedUser) {
                 this.user = JSON.parse(savedUser);

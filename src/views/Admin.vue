@@ -98,6 +98,15 @@
                     >
                         Roles & Permissions
                     </router-link>
+                    <router-link
+                        to="/admin/categories"
+                        :class="[
+                            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                            'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                        ]"
+                    >
+                        Categories
+                    </router-link>
                 </nav>
             </div>
 
@@ -431,7 +440,7 @@ const filteredUsers = computed(() => {
         users = users.filter(
             (u) =>
                 u.name.toLowerCase().includes(search) ||
-                u.email.toLowerCase().includes(search)
+                u.email.toLowerCase().includes(search),
         );
     }
 
@@ -447,14 +456,14 @@ onMounted(async () => {
 
 const approveVerification = (id) => {
     pendingVerifications.value = pendingVerifications.value.filter(
-        (v) => v.id !== id
+        (v) => v.id !== id,
     );
     alert("Verification approved!");
 };
 
 const rejectVerification = (id) => {
     pendingVerifications.value = pendingVerifications.value.filter(
-        (v) => v.id !== id
+        (v) => v.id !== id,
     );
     alert("Verification rejected");
 };
