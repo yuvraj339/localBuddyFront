@@ -149,7 +149,7 @@
                                             type="checkbox"
                                             :checked="
                                                 profileForm.categories?.includes(
-                                                    category,
+                                                    category
                                                 )
                                             "
                                             @change="toggleCategory(category)"
@@ -201,7 +201,7 @@
                         >
                             <span
                                 v-for="perm in authStore.getPermissions(
-                                    authStore.roles[0]?.id,
+                                    authStore.roles[0]?.id
                                 )"
                                 :key="perm.name"
                                 class="badge badge-primary capitalize cursor-pointer"
@@ -372,7 +372,7 @@
                                         type="checkbox"
                                         :checked="
                                             helperProfileForm.availability?.includes(
-                                                day,
+                                                day
                                             )
                                         "
                                         @change="toggleAvailability(day)"
@@ -738,7 +738,6 @@ const updateProfile = async () => {
 };
 
 const updateHelperProfile = async () => {
-    debugger;
     if (!helperProfileId.value) {
         helperProfileError.value = "Helper profile not found";
         return;
@@ -785,7 +784,7 @@ const updatePassword = async () => {
     loading.value = true;
     const resp = await api.updatePassword(
         passwordForm.current,
-        passwordForm.new,
+        passwordForm.new
     );
     if (resp.success) {
         passwordSuccess.value = "Password updated successfully!";
@@ -801,7 +800,7 @@ const updateVerificationStatus = async () => {
     loading.value = true;
     const resp = await api.updateVerification(
         !!authStore.user?.email_verified,
-        !!authStore.user?.phone_verified,
+        !!authStore.user?.phone_verified
     );
     if (resp.success) {
         authStore.user = resp.data;
@@ -815,7 +814,7 @@ const updateVerificationStatus = async () => {
 const deleteAccount = async () => {
     if (
         !confirm(
-            "Are you sure you want to delete your account? This cannot be undone.",
+            "Are you sure you want to delete your account? This cannot be undone."
         )
     )
         return;

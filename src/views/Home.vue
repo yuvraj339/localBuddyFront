@@ -78,6 +78,25 @@
                         class="card hover:shadow-xl transition-shadow cursor-pointer"
                         @click="$router.push(`/helper/${helper.id}`)"
                     >
+                        <span
+                            v-if="!helper.isAvailable"
+                            title="Helper is not available currently"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                class="size-6 text-red-500"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636"
+                                />
+                            </svg>
+                        </span>
                         <div class="flex flex-col items-center">
                             <img
                                 :src="helperAvatarSrc(helper.avatar)"

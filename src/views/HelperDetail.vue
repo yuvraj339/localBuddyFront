@@ -80,7 +80,7 @@
                                     }}</span>
                                     <span class="ml-2 text-gray-500 text-xs">{{
                                         new Date(
-                                            review.created_at,
+                                            review.created_at
                                         ).toLocaleDateString()
                                     }}</span>
                                 </div>
@@ -271,27 +271,36 @@
                                     >
                                 </div>
                             </div>
+                            <div v-if="!helper.isAvailable">
+                                <button
+                                    type="button"
+                                    class="btn btn-secondary w-full cursor-not-allowed"
+                                >
+                                    Not Available
+                                </button>
+                            </div>
+                            <div v-else>
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary w-full py-3 mb-3"
+                                    :disabled="!authStore.isAuthenticated"
+                                >
+                                    {{
+                                        authStore.isAuthenticated
+                                            ? "Book Now"
+                                            : "Login to Book"
+                                    }}
+                                </button>
 
-                            <button
-                                type="submit"
-                                class="btn btn-primary w-full py-3"
-                                :disabled="!authStore.isAuthenticated"
-                            >
-                                {{
-                                    authStore.isAuthenticated
-                                        ? "Book Now"
-                                        : "Login to Book"
-                                }}
-                            </button>
-
-                            <button
-                                v-if="authStore.isAuthenticated"
-                                type="button"
-                                @click="$router.push('/chat')"
-                                class="btn btn-secondary w-full"
-                            >
-                                Message Helper
-                            </button>
+                                <button
+                                    v-if="authStore.isAuthenticated"
+                                    type="button"
+                                    @click="$router.push('/chat')"
+                                    class="btn btn-secondary w-full"
+                                >
+                                    Message Helper
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
