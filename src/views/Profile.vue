@@ -141,22 +141,24 @@
                                 </label>
                                 <div class="grid grid-cols-2 gap-3">
                                     <label
-                                        v-for="category in availableCategories"
-                                        :key="category"
+                                        v-for="category in categoryStore.categories"
+                                        :key="category.id"
                                         class="flex items-center space-x-2"
                                     >
                                         <input
                                             type="checkbox"
                                             :checked="
                                                 profileForm.categories?.includes(
-                                                    category
+                                                    category.name
                                                 )
                                             "
-                                            @change="toggleCategory(category)"
+                                            @change="
+                                                toggleCategory(category.name)
+                                            "
                                             class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                                         />
                                         <span class="text-sm text-gray-700">{{
-                                            category
+                                            category.name
                                         }}</span>
                                     </label>
                                 </div>
@@ -571,7 +573,14 @@ import { reactive, ref, onMounted } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { api } from "../services/api";
 import { avatarSrc } from "../utils/util";
+import { useCategoryStore } from "../stores/categories";
 
+const categoryStore = useCategoryStore();
+
+onMounted(() => {
+    fetchProfile();
+    categoryStore.fetchCategories();
+});
 const authStore = useAuthStore();
 const loading = ref(false);
 const error = ref("");
@@ -634,14 +643,14 @@ const passwordForm = reactive({
     confirm: "",
 });
 
-const availableCategories = [
-    "Elder Care",
-    "Event Support",
-    "Home Functions",
-    "Errands",
-    "Companionship",
-    "Pet Care",
-];
+// const availableCategories = [
+//     "Elder Care",
+//     "Event Support",
+//     "Home Functions",
+//     "Errands",
+//     "Companionship",
+//     "Pet Care",
+// ];
 
 const availableDays = [
     "Monday",
@@ -713,7 +722,6 @@ const updateProfileForm = (user) => {
     profileForm.is_active = user.is_active || false;
     profileForm.is_verified = user.is_verified || false;
 };
-onMounted(fetchProfile);
 
 const updateProfile = async () => {
     loading.value = true;

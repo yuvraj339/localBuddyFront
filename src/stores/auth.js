@@ -37,7 +37,7 @@ export const useAuthStore = defineStore("auth", {
                     localStorage.setItem("user", JSON.stringify(response.data));
                     localStorage.setItem(
                         "user_roles",
-                        JSON.stringify(this.user_roles),
+                        JSON.stringify(this.user_roles)
                     );
                     await this.fetchRolesAndPermissions();
                     return true;
@@ -81,7 +81,7 @@ export const useAuthStore = defineStore("auth", {
             if (!this.user?.id || this.user.roles.length === 0) return;
             const permsResp = await new Promise(async (resolve) => {
                 const perms = await api.getUserPermissions(
-                    this.user.roles[0].id,
+                    this.user.roles[0].id
                 );
                 resolve([perms]);
             });
@@ -90,7 +90,7 @@ export const useAuthStore = defineStore("auth", {
             this.permissions = permsResp[0].success ? permsResp[0].data : [];
             localStorage.setItem(
                 "permissions",
-                JSON.stringify(this.permissions),
+                JSON.stringify(this.permissions)
             );
         },
 
@@ -108,6 +108,7 @@ export const useAuthStore = defineStore("auth", {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
             localStorage.removeItem("user_roles");
+            localStorage.removeItem("permissions");
         },
 
         async loadUser() {

@@ -97,7 +97,7 @@
                                 <button
                                     @click="
                                         categoryStore.deleteCategory(
-                                            category.id,
+                                            category.id
                                         )
                                     "
                                     class="text-red-600 hover:text-red-900 text-sm font-medium transition"
@@ -163,7 +163,12 @@
                     <div>
                         <label
                             class="block text-sm font-medium text-gray-700 mb-2"
-                            >Icon (Emoji)</label
+                            >Icon (<a
+                                href="https://emojidb.org/"
+                                target="_blank"
+                                class="text-blue-500"
+                                >Emoji</a
+                            >)</label
                         >
                         <input
                             v-model="categoryStore.formData.value.icon"

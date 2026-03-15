@@ -77,7 +77,7 @@
                     </button>
                 </form>
 
-                <div class="mt-6">
+                <!-- <div class="mt-6">
                     <div class="relative">
                         <div class="absolute inset-0 flex items-center">
                             <div class="w-full border-t border-gray-300"></div>
@@ -103,7 +103,7 @@
                             Login as Helper
                         </button>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="mt-6 text-center">
                     <p class="text-sm text-gray-600">

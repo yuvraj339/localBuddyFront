@@ -51,6 +51,12 @@ export const useCategoryStore = defineStore("categories", {
             };
         },
         async fetchCategories() {
+            let categories = JSON.parse(localStorage.getItem("categories"));
+
+            if (categories && categories.length) {
+                this.categories = categories;
+                return;
+            }
             try {
                 this.loading = true;
                 this.error = null;
@@ -58,6 +64,10 @@ export const useCategoryStore = defineStore("categories", {
 
                 if (response.success) {
                     this.categories = response.data;
+                    localStorage.setItem(
+                        "categories",
+                        JSON.stringify(this.categories)
+                    );
                 } else {
                     this.error = response.error || "Failed to load categories";
                 }
@@ -84,22 +94,28 @@ export const useCategoryStore = defineStore("categories", {
                 if (this.editingCategory) {
                     // Update existing category
                     response = await fetch(
-                        `${import.meta.env.VITE_API_BASE || "http://localhost:8000"}/api/v1/categories/${this.editingCategory.id}`,
+                        `${
+                            import.meta.env.VITE_API_BASE ||
+                            "http://localhost:8000"
+                        }/api/v1/categories/${this.editingCategory.id}`,
                         {
                             method: "PUT",
                             headers,
                             body: JSON.stringify(this.formData.value),
-                        },
+                        }
                     );
                 } else {
                     // Create new category
                     response = await fetch(
-                        `${import.meta.env.VITE_API_BASE || "http://localhost:8000"}/api/v1/categories`,
+                        `${
+                            import.meta.env.VITE_API_BASE ||
+                            "http://localhost:8000"
+                        }/api/v1/categories`,
                         {
                             method: "POST",
                             headers,
                             body: JSON.stringify(this.formData.value),
-                        },
+                        }
                     );
                 }
 
@@ -121,19 +137,21 @@ export const useCategoryStore = defineStore("categories", {
         async deleteCategory(categoryId) {
             try {
                 const response = await fetch(
-                    `${import.meta.env.VITE_API_BASE || "http://localhost:8000"}/api/v1/categories/${categoryId}`,
+                    `${
+                        import.meta.env.VITE_API_BASE || "http://localhost:8000"
+                    }/api/v1/categories/${categoryId}`,
                     {
                         method: "DELETE",
                         headers: {
                             Authorization: `Bearer ${this.token}`,
                         },
-                    },
+                    }
                 );
 
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(
-                        errorData.detail || "Failed to delete category",
+                        errorData.detail || "Failed to delete category"
                     );
                 }
 
