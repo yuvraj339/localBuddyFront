@@ -161,5 +161,39 @@ export const useCategoryStore = defineStore("categories", {
                 console.error(e);
             }
         },
+        async updateCategoryHelperCount(categoryName, countChange) {
+            try {
+                const category = this.categories.find(
+                    (cat) => cat.name === categoryName
+                );
+                if (!category) return;
+
+                const response = await fetch(
+                    `${
+                        import.meta.env.VITE_API_BASE || "http://localhost:8000"
+                    }/api/v1/categories/${category.id}/update-helper-count`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${this.token}`,
+                        },
+                        body: JSON.stringify({ count_change: countChange }),
+                    }
+                );
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(
+                        errorData.detail || "Failed to update helper count"
+                    );
+                }
+
+                // Update local category helper count
+                category.helper_count += countChange;
+            } catch (e) {
+                console.error("Error updating category helper count:", e);
+            }
+        },
     },
 });

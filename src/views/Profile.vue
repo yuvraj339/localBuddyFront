@@ -838,12 +838,14 @@ const deleteAccount = async () => {
     loading.value = false;
 };
 
-const toggleCategory = (category) => {
+const toggleCategory = async (category) => {
     const index = profileForm.categories.indexOf(category);
     if (index > -1) {
         profileForm.categories.splice(index, 1);
+        await categoryStore.updateCategoryHelperCount(category, -1); // Decrease count
     } else {
         profileForm.categories.push(category);
+        await categoryStore.updateCategoryHelperCount(category, 1); // Increase count
     }
 };
 
