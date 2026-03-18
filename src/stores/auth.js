@@ -79,19 +79,30 @@ export const useAuthStore = defineStore("auth", {
         },
         async fetchRolesAndPermissions() {
             if (!this.user?.id || this.user.roles.length === 0) return;
-            const permsResp = await new Promise(async (resolve) => {
-                const perms = await api.getUserPermissions(
-                    this.user.roles[0].id
+            try {
+                const permsResp = await new Promise(async (resolve) => {
+                    const perms = await api.getUserPermissions(
+                        this.user.roles[0].id
+                    );
+                    resolve([perms]);
+                });
+                this.permissions = permsResp[0].success
+                    ? permsResp[0].data
+                    : [];
+                localStorage.setItem(
+                    "permissions",
+                    JSON.stringify(this.permissions)
                 );
-                resolve([perms]);
-            });
-            // api.getUserRolesPermissions(this.user.id),
-            // this.roles = rolesResp.success ? rolesResp.data : [];
-            this.permissions = permsResp[0].success ? permsResp[0].data : [];
-            localStorage.setItem(
-                "permissions",
-                JSON.stringify(this.permissions)
-            );
+            } catch (error) {
+                if (error.response?.status === 401) {
+                    this.handleTokenExpiration();
+                }
+            }
+        },
+
+        handleTokenExpiration() {
+            this.logout();
+            window.location.href = "/login"; // Redirect to login page
         },
 
         updateUserState(newUserData) {

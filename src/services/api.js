@@ -1,15 +1,40 @@
 ﻿import {
     mockHelpers,
-    mockBookings,
     mockChats,
-    mockUser,
     mockHelperProfile,
     mockStats,
 } from "./mockData";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const BASE_URL = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+export const BASE_URL =
+    import.meta.env.VITE_API_BASE || "http://localhost:8000";
+
+function isTokenExpired() {
+    const token = localStorage.getItem("token");
+
+    let status = { success: true, msg: null };
+    if (!token) {
+        status = { success: false, msg: "Token required" };
+    }
+
+    const payload = parseJwt(token);
+    if (!payload || !payload.sub) {
+        status = { success: false, msg: "Invalid token payload" };
+    }
+
+    const currentTime = Date.now() / 1000; // convert ms → seconds
+    if (payload.exp < currentTime) {
+        status = { success: false, msg: "Token expired" };
+    }
+    console.log(status);
+    if (!status.success) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        return Promise.reject(status.msg);
+    }
+    return { payload: payload, token: token };
+}
 
 function parseJwt(token) {
     try {
@@ -24,7 +49,7 @@ function parseJwt(token) {
                         "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
                     );
                 })
-                .join(""),
+                .join("")
         );
         return JSON.parse(json);
     } catch (e) {
@@ -35,12 +60,17 @@ function parseJwt(token) {
 export const api = {
     async getHelpers(filters = {}) {
         try {
+            const { payload, token } = isTokenExpired();
+
             const params = new URLSearchParams();
             Object.entries(filters).forEach(([key, value]) => {
                 if (value !== null && value !== "") params.append(key, value);
             });
             const res = await fetch(
                 `${BASE_URL}/api/v1/helpers?${params.toString()}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
             );
             if (!res.ok) throw new Error("Backend error");
             const data = await res.json();
@@ -53,20 +83,18 @@ export const api = {
             if (filters.category) {
                 helpers = helpers.filter((h) =>
                     h.categories.some((c) =>
-                        c
-                            .toLowerCase()
-                            .includes(filters.category.toLowerCase()),
-                    ),
+                        c.toLowerCase().includes(filters.category.toLowerCase())
+                    )
                 );
             }
             if (filters.minRate) {
                 helpers = helpers.filter(
-                    (h) => h.hourlyRate >= filters.minRate,
+                    (h) => h.hourlyRate >= filters.minRate
                 );
             }
             if (filters.maxRate) {
                 helpers = helpers.filter(
-                    (h) => h.hourlyRate <= filters.maxRate,
+                    (h) => h.hourlyRate <= filters.maxRate
                 );
             }
             if (filters.minRating) {
@@ -79,8 +107,8 @@ export const api = {
                         h.name.toLowerCase().includes(searchLower) ||
                         h.bio.toLowerCase().includes(searchLower) ||
                         h.skills.some((s) =>
-                            s.toLowerCase().includes(searchLower),
-                        ),
+                            s.toLowerCase().includes(searchLower)
+                        )
                 );
             }
             return {
@@ -104,6 +132,9 @@ export const api = {
         try {
             const res = await fetch(
                 `${BASE_URL}/api/v1/rbac/roles/${role}/permissions`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
             );
             if (!res.ok) throw new Error("Failed to fetch permissions");
             const data = await res.json();
@@ -113,8 +144,11 @@ export const api = {
         }
     },
     async getHelper(id) {
+        const { payload, token } = isTokenExpired();
         try {
-            const res = await fetch(`${BASE_URL}/api/v1/helpers/${id}`);
+            const res = await fetch(`${BASE_URL}/api/v1/helpers/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             if (!res.ok) throw new Error("Backend error");
             const data = await res.json();
             return { success: true, data };
@@ -128,9 +162,13 @@ export const api = {
         }
     },
     async getHelperProfile(userId) {
+        const { payload, token } = isTokenExpired();
         try {
             const res = await fetch(
                 `${BASE_URL}/api/v1/helpers/user/${userId}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
             );
             if (!res.ok) throw new Error("Backend error");
             const data = await res.json();
@@ -144,7 +182,9 @@ export const api = {
 
     async getCategories() {
         try {
-            const res = await fetch(`${BASE_URL}/api/v1/categories`);
+            const res = await fetch(`${BASE_URL}/api/v1/categories`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             if (!res.ok) throw new Error("Backend error");
             const data = await res.json();
             return {
@@ -158,12 +198,12 @@ export const api = {
 
     async createBooking(bookingData) {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/bookings/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(bookingData),
             });
@@ -186,13 +226,11 @@ export const api = {
 
     async getBookings(userId, role = "customer") {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             // If role is customer, fetch by customer_id; if helper, fetch by helper_id
-            const param = role === "helper" ? "helper_id" : "customer_id";
+            // const param = role === "helper" ? "helper_id" : "customer_id";
             const res = await fetch(`${BASE_URL}/api/v1/bookings/${userId}`, {
-                headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
+                headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
             if (!res.ok) {
@@ -212,11 +250,9 @@ export const api = {
 
     async getBooking(id) {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/bookings/${id}`, {
-                headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
+                headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
             if (!res.ok) {
@@ -236,22 +272,22 @@ export const api = {
 
     async updateBookingStatus(id, status) {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(
                 `${BASE_URL}/api/v1/bookings/${id}/status`,
                 {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify({ status }),
-                },
+                }
             );
             const data = await res.json();
             if (!res.ok) {
                 throw new Error(
-                    data.detail || "Failed to update booking status",
+                    data.detail || "Failed to update booking status"
                 );
             }
             return {
@@ -268,45 +304,121 @@ export const api = {
     },
 
     async getChats() {
-        await delay(300);
-        return {
-            success: true,
-            data: mockChats,
-        };
+        try {
+            const { payload, token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/api/v1/messages/chats`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || "Chat not found");
+            }
+            return {
+                success: true,
+                data,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
     },
 
     async getChat(id) {
-        await delay(200);
-        const chat = mockChats.find((c) => c.id === parseInt(id));
-
-        if (!chat) {
+        try {
+            const { payload, token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/api/v1/messages/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || "Chat not found");
+            }
+            return {
+                success: true,
+                data,
+            };
+        } catch (error) {
             return {
                 success: false,
-                error: "Chat not found",
+                error: error.message,
             };
         }
-
-        return {
-            success: true,
-            data: chat,
-        };
     },
 
-    async sendMessage(chatId, message) {
-        await delay(400);
-        const newMessage = {
-            id: Date.now(),
-            senderId: "customer",
-            text: message,
-            timestamp: new Date().toISOString(),
-        };
+    async sendMessage(message) {
+        try {
+            const { payload, token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/api/v1/messages`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(message),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || "Failed to send message");
+            }
+            return {
+                success: true,
+                data: data,
+                message: "Message sent!",
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+        // const newMessage = {
+        //     id: Date.now(),
+        //     senderId: "customer",
+        //     text: message,
+        //     timestamp: new Date().toISOString(),
+        // };
 
         return {
             success: true,
             data: newMessage,
         };
     },
-
+    async updateChatStatus(status, user_id) {
+        const { payload, token } = isTokenExpired();
+        try {
+            debugger;
+            let url = `${BASE_URL}/api/v1/messages/${status}/${user_id}`;
+            console.log(url);
+            const res = await fetch(
+                `${BASE_URL}/api/v1/messages/${status}/${user_id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    // body: JSON.stringify(profileData),
+                }
+            );
+            if (!res.ok) {
+                const err = await res
+                    .json()
+                    .catch(() => ({ detail: res.statusText }));
+                return {
+                    success: false,
+                    error: err.detail || "Failed to update profile",
+                };
+            }
+            // const user = await res.json();
+            return {
+                success: true,
+            };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
     async login(email, password) {
         // Use OAuth2 form fields: username, password
         try {
@@ -369,7 +481,7 @@ export const api = {
             // Try to login after registration to get token
             const loginResp = await this.login(
                 userData.email,
-                userData.password,
+                userData.password
             );
             if (!loginResp.success) {
                 // Registration succeeded but login failed; return user without token
@@ -388,14 +500,7 @@ export const api = {
     },
 
     async getUserProfile() {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            return { success: false, error: "No token" };
-        }
-        const payload = parseJwt(token);
-        if (!payload || !payload.sub) {
-            return { success: false, error: "Invalid token payload" };
-        }
+        const { payload, token } = isTokenExpired();
         try {
             const res = await fetch(`${BASE_URL}/api/v1/users/${payload.sub}`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -425,14 +530,7 @@ export const api = {
     },
 
     async updateProfile(profileData) {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            return { success: false, error: "No token" };
-        }
-        const payload = parseJwt(token);
-        if (!payload || !payload.sub) {
-            return { success: false, error: "Invalid token payload" };
-        }
+        const { payload, token } = isTokenExpired();
         try {
             const res = await fetch(`${BASE_URL}/api/v1/users/${payload.sub}`, {
                 method: "PUT",
@@ -463,6 +561,7 @@ export const api = {
     },
 
     async fetchReviews({ helperId, userId, bookingId } = {}) {
+        const { payload, token } = isTokenExpired();
         try {
             const params = new URLSearchParams();
             if (helperId) params.append("helper_id", helperId);
@@ -470,6 +569,9 @@ export const api = {
             if (bookingId) params.append("booking_id", bookingId);
             const res = await fetch(
                 `${BASE_URL}/api/v1/reviews?${params.toString()}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
             );
             if (!res.ok) throw new Error("Failed to fetch reviews");
             const data = await res.json();
@@ -481,12 +583,12 @@ export const api = {
 
     async submitReview(reviewData) {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/reviews/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(reviewData),
             });
@@ -560,11 +662,7 @@ export const api = {
     },
 
     async uploadAvatar(file) {
-        const token = localStorage.getItem("token");
-        if (!token) return { success: false, error: "No token" };
-        const payload = parseJwt(token);
-        if (!payload || !payload.sub)
-            return { success: false, error: "Invalid token payload" };
+        const { payload, token } = isTokenExpired();
         const formData = new FormData();
         formData.append("file", file);
         try {
@@ -574,7 +672,7 @@ export const api = {
                     method: "POST",
                     headers: { Authorization: `Bearer ${token}` },
                     body: formData,
-                },
+                }
             );
             if (!res.ok) {
                 const err = await res
@@ -593,11 +691,7 @@ export const api = {
     },
 
     async updatePassword(currentPassword, newPassword) {
-        const token = localStorage.getItem("token");
-        if (!token) return { success: false, error: "No token" };
-        const payload = parseJwt(token);
-        if (!payload || !payload.sub)
-            return { success: false, error: "Invalid token payload" };
+        const { payload, token } = isTokenExpired();
         const formData = new FormData();
         formData.append("current_password", currentPassword);
         formData.append("new_password", newPassword);
@@ -608,7 +702,7 @@ export const api = {
                     method: "POST",
                     headers: { Authorization: `Bearer ${token}` },
                     body: formData,
-                },
+                }
             );
             if (!res.ok) {
                 const err = await res
@@ -627,11 +721,7 @@ export const api = {
     },
 
     async updateVerification(emailVerified, phoneVerified) {
-        const token = localStorage.getItem("token");
-        if (!token) return { success: false, error: "No token" };
-        const payload = parseJwt(token);
-        if (!payload || !payload.sub)
-            return { success: false, error: "Invalid token payload" };
+        const { payload, token } = isTokenExpired();
         const formData = new FormData();
         formData.append("email_verified", emailVerified);
         formData.append("phone_verified", phoneVerified);
@@ -642,7 +732,7 @@ export const api = {
                     method: "POST",
                     headers: { Authorization: `Bearer ${token}` },
                     body: formData,
-                },
+                }
             );
             if (!res.ok) {
                 const err = await res
@@ -661,11 +751,8 @@ export const api = {
     },
 
     async softDeleteAccount() {
-        const token = localStorage.getItem("token");
-        if (!token) return { success: false, error: "No token" };
-        const payload = parseJwt(token);
-        if (!payload || !payload.sub)
-            return { success: false, error: "Invalid token payload" };
+        const { payload, token } = isTokenExpired();
+
         try {
             const res = await fetch(`${BASE_URL}/api/v1/users/${payload.sub}`, {
                 method: "DELETE",
@@ -690,9 +777,10 @@ export const api = {
     // ============= ROLES & PERMISSIONS MANAGEMENT =============
     async getRoles() {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
+
             const res = await fetch(`${BASE_URL}/api/v1/rbac/roles`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                headers: { Authorization: `Bearer ${token}` },
             });
             if (!res.ok) throw new Error("Failed to fetch roles");
             const data = await res.json();
@@ -704,12 +792,12 @@ export const api = {
 
     async createRole(roleData) {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/rbac/role`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(roleData),
             });
@@ -724,12 +812,12 @@ export const api = {
 
     async updateRole(roleId, roleData) {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/rbac/role/${roleId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(roleData),
             });
@@ -744,10 +832,10 @@ export const api = {
 
     async deleteRole(roleId) {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/rbac/role/${roleId}`, {
                 method: "DELETE",
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                headers: { Authorization: `Bearer ${token}` },
             });
             if (!res.ok) throw new Error("Failed to delete role");
             return { success: true };
@@ -758,9 +846,9 @@ export const api = {
 
     async getPermissions() {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/rbac/permissions`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                headers: { Authorization: `Bearer ${token}` },
             });
             if (!res.ok) throw new Error("Failed to fetch permissions");
             const data = await res.json();
@@ -772,7 +860,7 @@ export const api = {
 
     async createPermission(permissionData) {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/rbac/permission`, {
                 method: "POST",
                 headers: {
@@ -792,17 +880,17 @@ export const api = {
 
     async updatePermission(permId, permissionData) {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(
                 `${BASE_URL}/api/v1/rbac/permission/${permId}`,
                 {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify(permissionData),
-                },
+                }
             );
             const data = await res.json();
             if (!res.ok)
@@ -815,13 +903,13 @@ export const api = {
 
     async deletePermission(permId) {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(
                 `${BASE_URL}/api/v1/rbac/permission/${permId}`,
                 {
                     method: "DELETE",
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
-                },
+                    headers: { Authorization: `Bearer ${token}` },
+                }
             );
             if (!res.ok) throw new Error("Failed to delete permission");
             return { success: true };
@@ -832,20 +920,20 @@ export const api = {
 
     async assignPermissionToRole(roleId, permissionId) {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(
                 `${BASE_URL}/api/v1/rbac/assign_permission`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify({
                         role_id: roleId,
                         permission_id: permissionId,
                     }),
-                },
+                }
             );
             const data = await res.json();
             if (!res.ok)
@@ -858,13 +946,13 @@ export const api = {
 
     async removePermissionFromRole(roleId, permissionId) {
         try {
-            const token = localStorage.getItem("token");
+            const { payload, token } = isTokenExpired();
             const res = await fetch(
                 `${BASE_URL}/api/v1/revoke_permission/${roleId}/${permissionId}`,
                 {
                     method: "DELETE",
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
-                },
+                    headers: { Authorization: `Bearer ${token}` },
+                }
             );
             if (!res.ok) throw new Error("Failed to remove permission");
             return { success: true };
@@ -874,22 +962,16 @@ export const api = {
     },
     // ============= HELPER PROFILE MANAGEMENT =============
     async updateHelperProfile(profileId, helperData) {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            return { success: false, error: "No token" };
-        }
+        const { payload, token } = isTokenExpired();
         try {
-            const res = await fetch(
-                `${BASE_URL}/api/v1/helpers/${profileId}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(helperData),
+            const res = await fetch(`${BASE_URL}/api/v1/helpers/${profileId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                 },
-            );
+                body: JSON.stringify(helperData),
+            });
             if (!res.ok) {
                 const err = await res
                     .json()
@@ -911,18 +993,16 @@ export const api = {
     },
 
     async getHelperProfileByUserId(userId) {
-        const token = localStorage.getItem("token");
+        const { payload, token } = isTokenExpired();
         try {
-            const res = await fetch(
-                `${BASE_URL}/api/v1/helpers/${userId}`,
-                {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
-                },
-            );
+            const res = await fetch(`${BASE_URL}/api/v1/helpers/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             if (!res.ok) throw new Error("Failed to fetch helper profile");
             const data = await res.json();
             return { success: true, data };
         } catch (e) {
             return { success: false, error: e.message };
         }
-    },};
+    },
+};

@@ -11,8 +11,5 @@ export const avatarSrc = (avatarUrl) => {
 };
 
 export const helperAvatarSrc = (avatarUrl) => {
-    if (avatarUrl) {
-        return `${API_BASE_URL}${avatarUrl}`;
-    }
-    return `${API_BASE_URL}/static/default/default-avatar.png`;
+    return avatarSrc(avatarUrl);
 };

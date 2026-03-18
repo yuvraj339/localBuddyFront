@@ -295,7 +295,11 @@
                                 <button
                                     v-if="authStore.isAuthenticated"
                                     type="button"
-                                    @click="$router.push('/chat')"
+                                    @click="
+                                        $router.push(
+                                            `/chat?helper=${helper.id}`
+                                        )
+                                    "
                                     class="btn btn-secondary w-full"
                                 >
                                     Message Helper

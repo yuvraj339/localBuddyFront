@@ -64,12 +64,12 @@ export const useHelperStore = defineStore("helper", {
                             //     }
                             // }
                             return { ...helper, rating, reviewCount, reviews };
-                        }),
+                        })
                     );
                     this.helpers = helpersWithReviews;
                     localStorage.setItem(
                         "helpers",
-                        JSON.stringify(helpersWithReviews),
+                        JSON.stringify(helpersWithReviews)
                     );
                 } else {
                     this.error = response.error;
@@ -91,6 +91,7 @@ export const useHelperStore = defineStore("helper", {
                 }
                 this.currentHelper =
                     this.helpers.find((h) => h.id === id) || null;
+                console.log(this.currentHelper);
                 // const response = await api.getHelper(id);
                 // if (response.success) {
                 //     const helper = response.data;
