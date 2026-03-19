@@ -249,6 +249,27 @@
                                 ></textarea>
                             </div>
 
+                            <div>
+                                <label
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                >
+                                    Payment Method
+                                </label>
+                                <select
+                                    v-model="bookingForm.paymentMethod"
+                                    required
+                                    class="input"
+                                >
+                                    <option value="">
+                                        Select a payment method
+                                    </option>
+                                    <option value="UPI">UPI</option>
+                                    <option value="COD">
+                                        Cash on Delivery
+                                    </option>
+                                </select>
+                            </div>
+
                             <div class="border-t pt-4">
                                 <div class="flex justify-between mb-2">
                                     <span class="text-gray-600">Rate:</span>
@@ -362,6 +383,7 @@ import { api } from "../services/api";
 import { useRoute, useRouter } from "vue-router";
 import { useHelperStore } from "../stores/helper";
 import { useBookingStore } from "../stores/booking";
+import { usePaymentStore } from "../stores/payment";
 import { useAuthStore } from "../stores/auth";
 import { helperAvatarSrc } from "../utils/util";
 
@@ -370,6 +392,7 @@ const router = useRouter();
 const helperStore = useHelperStore();
 const bookingStore = useBookingStore();
 const authStore = useAuthStore();
+const payment = usePaymentStore();
 
 const helper = computed(() => helperStore.currentHelper);
 
@@ -395,6 +418,7 @@ const bookingForm = reactive({
     hours: 2,
     category: "",
     description: "",
+    paymentMethod: "", // Add payment method field
 });
 
 const totalAmount = computed(() => {
@@ -436,6 +460,11 @@ const handleBooking = async () => {
         return;
     }
 
+    if (!bookingForm.paymentMethod) {
+        alert("Please select a payment method.");
+        return;
+    }
+
     const bookingData = {
         customer_id: authStore.user.id,
         helper_id: helper.value.id,
@@ -449,12 +478,31 @@ const handleBooking = async () => {
         total_amount: totalAmount.value,
         category: bookingForm.category,
         description: bookingForm.description,
+        payment_method: bookingForm.paymentMethod, // Include payment method
         location: "",
     };
 
     const booking = await bookingStore.createBooking(bookingData);
 
     if (booking) {
+        // Trigger payment collection if UPI is selected
+        if (bookingForm.paymentMethod === "UPI") {
+            const paymentData = {
+                booking_id: booking.id,
+                customer_id: authStore.user.id,
+                helper_id: helper.value.id,
+                amount: totalAmount.value,
+                payment_method: bookingForm.paymentMethod,
+            };
+            const paymentResponse = await payment.createPayment(paymentData);
+            if (paymentResponse.success) {
+                alert("Payment successful!");
+            } else {
+                alert("Payment failed. Please try again.");
+                return;
+            }
+        }
+
         alert("Booking request sent successfully!");
         router.push("/bookings");
     }

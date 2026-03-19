@@ -16,7 +16,7 @@
                 >
                     <div class="text-sm font-medium mb-2">Active Bookings</div>
                     <div class="text-3xl font-bold">
-                        {{ bookingStore.upcomingBookings.length }}
+                        {{ upcomingBookings.length }}
                     </div>
                 </div>
                 <div
@@ -24,7 +24,7 @@
                 >
                     <div class="text-sm font-medium mb-2">Completed</div>
                     <div class="text-3xl font-bold">
-                        {{ bookingStore.completedBookings.length }}
+                        {{ completedBookings.length }}
                     </div>
                 </div>
                 <div
@@ -32,7 +32,7 @@
                 >
                     <div class="text-sm font-medium mb-2">Pending Requests</div>
                     <div class="text-3xl font-bold">
-                        {{ bookingStore.pendingBookings.length }}
+                        {{ pendingBookings.length }}
                     </div>
                 </div>
             </div>
@@ -52,7 +52,7 @@
                     </div>
 
                     <div
-                        v-if="bookingStore.upcomingBookings.length === 0"
+                        v-if="upcomingBookings.length === 0"
                         class="card text-center py-12"
                     >
                         <div class="text-6xl mb-4">📅</div>
@@ -66,10 +66,7 @@
 
                     <div v-else class="space-y-4">
                         <div
-                            v-for="booking in bookingStore.upcomingBookings.slice(
-                                0,
-                                3
-                            )"
+                            v-for="booking in upcomingBookings.slice(0, 3)"
                             :key="booking.id"
                             class="card hover:shadow-lg transition-shadow"
                         >
@@ -224,8 +221,13 @@ import { useBookingStore } from "../stores/booking";
 const authStore = useAuthStore();
 const bookingStore = useBookingStore();
 
-onMounted(() => {
-    bookingStore.fetchBookings(authStore.user?.id, "customer");
+let upcomingBookings = bookingStore.getBookings("upcoming");
+let completedBookings = bookingStore.getBookings("completed");
+let pendingBookings = bookingStore.getBookings("pending");
+
+onMounted(async () => {
+    await bookingStore.fetchBookings(authStore.user?.id, "customer");
+    await authStore.getUser();
 });
 
 const formatDate = (dateString) => {

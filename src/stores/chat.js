@@ -27,6 +27,7 @@ export const useChatStore = defineStore("chat", () => {
     };
 
     const sendMessage = async () => {
+        debugger;
         if (!newMessage.value.trim() || !selectedChat.value) return;
 
         const message = {
@@ -45,7 +46,6 @@ export const useChatStore = defineStore("chat", () => {
 
     const selectChat = async (chat) => {
         if (!chat.chat_user) return true;
-
         selectedChat.value = chat.chat_user;
         chat.unread = 0;
         selectedChat.value.messages = await fetchMessages(chat.chat_user?.id);

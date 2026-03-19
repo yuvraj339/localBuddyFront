@@ -109,7 +109,15 @@ export const useAuthStore = defineStore("auth", {
             this.user = { ...this.user, ...newUserData };
             localStorage.setItem("user", JSON.stringify(this.user));
         },
-
+        async getUser() {
+            const resp = await api.getUserProfile();
+            if (resp.success) {
+                this.user = resp.data;
+                return true;
+            } else {
+                return false;
+            }
+        },
         logout() {
             this.user = null;
             this.token = null;
@@ -120,6 +128,8 @@ export const useAuthStore = defineStore("auth", {
             localStorage.removeItem("user");
             localStorage.removeItem("user_roles");
             localStorage.removeItem("permissions");
+            localStorage.removeItem("categories");
+            localStorage.removeItem("helpers");
         },
 
         async loadUser() {

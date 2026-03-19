@@ -141,7 +141,7 @@
                                 </label>
                                 <div class="grid grid-cols-2 gap-3">
                                     <label
-                                        v-for="category in categoryStore.categories"
+                                        v-for="category in categoryStore.getCategories"
                                         :key="category.id"
                                         class="flex items-center space-x-2"
                                     >
@@ -669,9 +669,8 @@ const fetchProfile = async () => {
         if (authStore.user?.email) {
             updateProfileForm(authStore.user);
         } else {
-            const resp = await api.getUserProfile();
-            if (resp.success) {
-                authStore.user = resp.data;
+            const resp = await authStore.getUser();
+            if (resp) {
                 updateProfileForm(authStore.user);
             } else {
                 error.value = resp.error || "Failed to load profile";

@@ -10,12 +10,12 @@ export const useBookingStore = defineStore("booking", {
     }),
 
     getters: {
-        upcomingBookings: (state) =>
-            state.bookings.filter((b) => b.status === "upcoming"),
-        completedBookings: (state) =>
-            state.bookings.filter((b) => b.status === "completed"),
-        pendingBookings: (state) =>
-            state.bookings.filter((b) => b.status === "pending"),
+        getBookings: (state) => (status) =>
+            state.bookings.filter((b) => b.status === status),
+        // completedBookings: (state) =>
+        //     state.bookings.filter((b) => b.status === "completed"),
+        // pendingBookings: (state) =>
+        //     state.bookings.filter((b) => b.status === "pending"),
     },
 
     actions: {

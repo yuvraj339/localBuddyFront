@@ -26,7 +26,15 @@
                         >
                             <div
                                 class="flex items-start space-x-3"
-                                @click="selectChat({ id: helper.id })"
+                                @click="
+                                    selectChat({
+                                        chat_user: {
+                                            id: helper.id,
+                                            full_name: helper.name,
+                                            avatar_url: helper.avatar,
+                                        },
+                                    })
+                                "
                             >
                                 <div class="relative">
                                     <img
@@ -120,7 +128,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- {{ selectedChat }} -->
                     <div class="col-span-2 flex flex-col h-full">
                         <div
                             v-if="!selectedChat"

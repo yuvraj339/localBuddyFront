@@ -14,7 +14,7 @@
                         class="hidden md:flex space-x-4"
                     >
                         <router-link
-                            v-if="authStore.isCustomer"
+                            v-if="authStore.hasRole('customer')"
                             to="/helpers"
                             class="nav-link"
                             active-class="nav-link-active"
@@ -41,6 +41,20 @@
                                 {{ unreadCount }}
                             </span>
                         </router-link>
+                        <router-link
+                            v-if="authStore.hasRole('helper')"
+                            to="/helper-dashboard"
+                            class="btn btn-primary text-sm"
+                        >
+                            Dashboard
+                        </router-link>
+                        <router-link
+                            v-else-if="authStore.hasRole('customer')"
+                            to="/dashboard"
+                            class="btn btn-primary text-sm"
+                        >
+                            Dashboard
+                        </router-link>
                     </div>
                 </div>
 
@@ -61,20 +75,7 @@
                     </template>
 
                     <template v-else>
-                        <router-link
-                            v-if="authStore.isHelper"
-                            to="/helper-dashboard"
-                            class="btn btn-primary text-sm"
-                        >
-                            Dashboard
-                        </router-link>
-                        <router-link
-                            v-else-if="authStore.isCustomer"
-                            to="/dashboard"
-                            class="btn btn-primary text-sm"
-                        >
-                            Dashboard
-                        </router-link>
+                        <!-- {{ authStore }} -->
                         {{ authStore.user?.full_name }}&nbsp;
                         <div class="relative" ref="dropdown">
                             <button
@@ -121,7 +122,6 @@ import { useAuthStore } from "../stores/auth";
 import { avatarSrc } from "../utils/util";
 const router = useRouter();
 const authStore = useAuthStore();
-import { api } from "../services/api";
 
 const showDropdown = ref(false);
 const unreadCount = ref(2);
@@ -141,25 +141,8 @@ const handleClickOutside = (event) => {
     }
 };
 
-const fetchProfile = async () => {
-    loading.value = true;
-    error.value = "";
-    if (authStore.user?.avatar_url) {
-        loading.value = false;
-        return;
-    }
-    const resp = await api.getUserProfile();
-    if (resp.success) {
-        authStore.user = resp.data;
-    } else {
-        error.value = resp.error || "Failed to load profile";
-    }
-    loading.value = false;
-};
-
 onMounted(() => {
     document.addEventListener("click", handleClickOutside);
-    fetchProfile();
 });
 
 onUnmounted(() => {

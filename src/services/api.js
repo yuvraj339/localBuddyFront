@@ -58,6 +58,33 @@ function parseJwt(token) {
 }
 
 export const api = {
+    async makePayment(paymentData) {
+        try {
+            const { payload, token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/api/v1/payments/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(paymentData),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || "Failed to make payment");
+            }
+            return {
+                success: true,
+                data: data,
+                message: "payment mode added successfully!",
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    },
     async getHelpers(filters = {}) {
         try {
             const { payload, token } = isTokenExpired();
@@ -130,6 +157,7 @@ export const api = {
     // },
     async getUserPermissions(role) {
         try {
+            const { payload, token } = isTokenExpired();
             const res = await fetch(
                 `${BASE_URL}/api/v1/rbac/roles/${role}/permissions`,
                 {
@@ -182,6 +210,7 @@ export const api = {
 
     async getCategories() {
         try {
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/categories`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -386,9 +415,8 @@ export const api = {
         };
     },
     async updateChatStatus(status, user_id) {
-        const { payload, token } = isTokenExpired();
         try {
-            debugger;
+            const { payload, token } = isTokenExpired();
             let url = `${BASE_URL}/api/v1/messages/${status}/${user_id}`;
             console.log(url);
             const res = await fetch(
@@ -500,8 +528,8 @@ export const api = {
     },
 
     async getUserProfile() {
-        const { payload, token } = isTokenExpired();
         try {
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/users/${payload.sub}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -530,8 +558,8 @@ export const api = {
     },
 
     async updateProfile(profileData) {
-        const { payload, token } = isTokenExpired();
         try {
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/users/${payload.sub}`, {
                 method: "PUT",
                 headers: {
@@ -561,8 +589,8 @@ export const api = {
     },
 
     async fetchReviews({ helperId, userId, bookingId } = {}) {
-        const { payload, token } = isTokenExpired();
         try {
+            const { payload, token } = isTokenExpired();
             const params = new URLSearchParams();
             if (helperId) params.append("helper_id", helperId);
             if (userId) params.append("user_id", userId);
@@ -662,10 +690,10 @@ export const api = {
     },
 
     async uploadAvatar(file) {
-        const { payload, token } = isTokenExpired();
-        const formData = new FormData();
-        formData.append("file", file);
         try {
+            const { payload, token } = isTokenExpired();
+            const formData = new FormData();
+            formData.append("file", file);
             const res = await fetch(
                 `${BASE_URL}/api/v1/users/${payload.sub}/avatar`,
                 {
@@ -691,11 +719,11 @@ export const api = {
     },
 
     async updatePassword(currentPassword, newPassword) {
-        const { payload, token } = isTokenExpired();
-        const formData = new FormData();
-        formData.append("current_password", currentPassword);
-        formData.append("new_password", newPassword);
         try {
+            const { payload, token } = isTokenExpired();
+            const formData = new FormData();
+            formData.append("current_password", currentPassword);
+            formData.append("new_password", newPassword);
             const res = await fetch(
                 `${BASE_URL}/api/v1/users/${payload.sub}/password`,
                 {
@@ -721,11 +749,11 @@ export const api = {
     },
 
     async updateVerification(emailVerified, phoneVerified) {
-        const { payload, token } = isTokenExpired();
-        const formData = new FormData();
-        formData.append("email_verified", emailVerified);
-        formData.append("phone_verified", phoneVerified);
         try {
+            const { payload, token } = isTokenExpired();
+            const formData = new FormData();
+            formData.append("email_verified", emailVerified);
+            formData.append("phone_verified", phoneVerified);
             const res = await fetch(
                 `${BASE_URL}/api/v1/users/${payload.sub}/verify`,
                 {
@@ -751,9 +779,8 @@ export const api = {
     },
 
     async softDeleteAccount() {
-        const { payload, token } = isTokenExpired();
-
         try {
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/users/${payload.sub}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` },
@@ -778,7 +805,6 @@ export const api = {
     async getRoles() {
         try {
             const { payload, token } = isTokenExpired();
-
             const res = await fetch(`${BASE_URL}/api/v1/rbac/roles`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -962,8 +988,8 @@ export const api = {
     },
     // ============= HELPER PROFILE MANAGEMENT =============
     async updateHelperProfile(profileId, helperData) {
-        const { payload, token } = isTokenExpired();
         try {
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/helpers/${profileId}`, {
                 method: "PUT",
                 headers: {
@@ -993,8 +1019,8 @@ export const api = {
     },
 
     async getHelperProfileByUserId(userId) {
-        const { payload, token } = isTokenExpired();
         try {
+            const { payload, token } = isTokenExpired();
             const res = await fetch(`${BASE_URL}/api/v1/helpers/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });

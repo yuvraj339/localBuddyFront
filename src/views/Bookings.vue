@@ -7,8 +7,7 @@
                 </h1>
                 <p class="text-gray-600">View and manage your bookings</p>
             </div>
-
-            <div class="mb-6 border-b border-gray-200">
+            <!-- <div class="mb-6 border-b border-gray-200">
                 <nav class="flex space-x-8">
                     <button
                         @click="activeTab = 'upcoming'"
@@ -19,7 +18,7 @@
                                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
                         ]"
                     >
-                        Upcoming ({{ bookingStore.upcomingBookings.length }})
+                        
                     </button>
                     <button
                         @click="activeTab = 'pending'"
@@ -44,10 +43,13 @@
                         Completed ({{ bookingStore.completedBookings.length }})
                     </button>
                 </nav>
-            </div>
-
+            </div> -->
+            <TabsComponent
+                :activeTab="activeTab"
+                @update:activeTab="activeTab = $event"
+            />
             <div
-                v-if="currentBookings.length === 0"
+                v-if="currentBookings && currentBookings.length === 0"
                 class="card text-center py-16"
             >
                 <div class="text-6xl mb-4">📋</div>
@@ -70,8 +72,8 @@
                 >
                     <div class="flex items-start space-x-6">
                         <img
-                            :src="booking.helper_avatar"
-                            :alt="booking.helper_name"
+                            :src="avatarSrc(booking.customer_avatar_url)"
+                            :alt="booking.customer_name"
                             class="w-20 h-20 rounded-full object-cover border-2 border-primary-100"
                         />
 
@@ -81,7 +83,7 @@
                                     <h3
                                         class="text-xl font-semibold text-gray-900"
                                     >
-                                        {{ booking.helper_name }}
+                                        {{ booking.customer_name }}
                                     </h3>
                                     <p class="text-gray-600">
                                         {{ booking.category }}
@@ -165,14 +167,17 @@
                                 >
                                     🆘 Emergency SOS
                                 </button>
-
-                                <router-link
-                                    to="/chat"
+                                <button
+                                    type="button"
+                                    @click="
+                                        $router.push(
+                                            `/chat?helper=${booking.customer_id}`
+                                        )
+                                    "
                                     class="btn btn-secondary text-sm"
                                 >
                                     💬 Message
-                                </router-link>
-
+                                </button>
                                 <button
                                     v-if="
                                         booking.status === 'completed' &&
@@ -267,7 +272,8 @@
 import { ref, computed, onMounted, reactive } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { useBookingStore } from "../stores/booking";
-
+import { avatarSrc } from "../utils/util";
+import TabsComponent from "../components/bookings/TabsComponent.vue";
 const authStore = useAuthStore();
 const bookingStore = useBookingStore();
 
@@ -281,16 +287,17 @@ const reviewForm = reactive({
 });
 
 const currentBookings = computed(() => {
-    switch (activeTab.value) {
-        case "upcoming":
-            return bookingStore.upcomingBookings;
-        case "pending":
-            return bookingStore.pendingBookings;
-        case "completed":
-            return bookingStore.completedBookings;
-        default:
-            return [];
-    }
+    return bookingStore.getBookings(activeTab.value);
+    // switch (activeTab.value) {
+    //     case "upcoming":
+    //         return bookingStore.upcomingBookings;
+    //     case "pending":
+    //         return bookingStore.pendingBookings;
+    //     case "completed":
+    //         return bookingStore.completedBookings;
+    //     default:
+    //         return [];
+    // }
 });
 
 onMounted(() => {
@@ -320,7 +327,7 @@ const trackLocation = (id) => {
 const sendSOS = (id) => {
     if (
         confirm(
-            "This will alert emergency services and platform support. Continue?",
+            "This will alert emergency services and platform support. Continue?"
         )
     ) {
         alert("Emergency alert sent! Help is on the way.");
