@@ -299,18 +299,18 @@ export const api = {
         }
     },
 
-    async updateBookingStatus(id, status) {
+    async updateBookingStatus(id, booking_status) {
         try {
             const { payload, token } = isTokenExpired();
             const res = await fetch(
-                `${BASE_URL}/api/v1/bookings/${id}/status`,
+                `${BASE_URL}/api/v1/bookings/${id}/update_status`,
                 {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ status }),
+                    body: JSON.stringify({ status: booking_status }),
                 }
             );
             const data = await res.json();

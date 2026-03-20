@@ -146,7 +146,9 @@
                             <div class="flex space-x-3">
                                 <button
                                     v-if="booking.status === 'upcoming'"
-                                    @click="cancelBooking(booking.id)"
+                                    @click="
+                                        bookingStatus(booking.id, 'cancelled')
+                                    "
                                     class="btn btn-danger text-sm"
                                 >
                                     Cancel Booking
@@ -178,6 +180,35 @@
                                 >
                                     💬 Message
                                 </button>
+                                <select
+                                    v-if="
+                                        ![
+                                            'rejected',
+                                            'completed',
+                                            'cancelled',
+                                            'disputed',
+                                        ].includes(booking.status)
+                                    "
+                                    class="btn btn-outline text-sm capitalize border border-gray-200"
+                                    :value="booking.status"
+                                    @change="
+                                        updateBookingStatus(
+                                            booking.id,
+                                            $event.target.value
+                                        )
+                                    "
+                                >
+                                    <option disabled value="">
+                                        Update Status
+                                    </option>
+                                    <option
+                                        v-for="status in bookingStatusList"
+                                        :key="status"
+                                        :value="status"
+                                    >
+                                        {{ status.replace("_", " ") }}
+                                    </option>
+                                </select>
                                 <button
                                     v-if="
                                         booking.status === 'completed' &&
@@ -281,6 +312,15 @@ const activeTab = ref("upcoming");
 const showReviewModal = ref(false);
 const selectedBooking = ref(null);
 
+const bookingStatusList = [
+    "pending",
+    "accepted",
+    "rejected",
+    "in_progress",
+    "completed",
+    "cancelled",
+    "disputed",
+];
 const reviewForm = reactive({
     rating: 5,
     review: "",
@@ -288,16 +328,6 @@ const reviewForm = reactive({
 
 const currentBookings = computed(() => {
     return bookingStore.getBookings(activeTab.value);
-    // switch (activeTab.value) {
-    //     case "upcoming":
-    //         return bookingStore.upcomingBookings;
-    //     case "pending":
-    //         return bookingStore.pendingBookings;
-    //     case "completed":
-    //         return bookingStore.completedBookings;
-    //     default:
-    //         return [];
-    // }
 });
 
 onMounted(() => {
@@ -313,10 +343,17 @@ const formatDate = (dateString) => {
     });
 };
 
-const cancelBooking = async (id) => {
-    if (confirm("Are you sure you want to cancel this booking?")) {
-        await bookingStore.updateBookingStatus(id, "cancelled");
-        alert("Booking cancelled successfully");
+// const cancelBooking = async (id) => {
+//     if (confirm("Are you sure you want to cancel this booking?")) {
+//         await bookingStore.updateBookingStatus(id, "cancelled");
+//         alert("Booking cancelled successfully");
+//     }
+// };
+
+const updateBookingStatus = async (id, status) => {
+    if (confirm(`Are you sure you want to ${status} this booking?`)) {
+        await bookingStore.updateBookingStatus(id, status);
+        alert(`Booking ${status} successfully`);
     }
 };
 

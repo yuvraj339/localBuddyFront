@@ -144,7 +144,10 @@
                         </h2>
 
                         <div
-                            v-if="bookingStore.upcomingBookings.length === 0"
+                            v-if="
+                                bookingStore.getBookings('upcoming').length ===
+                                0
+                            "
                             class="text-center py-8"
                         >
                             <div class="text-6xl mb-4">📅</div>
@@ -153,7 +156,9 @@
 
                         <div v-else class="space-y-4">
                             <div
-                                v-for="booking in bookingStore.upcomingBookings"
+                                v-for="booking in bookingStore.getBookings(
+                                    'upcoming'
+                                )"
                                 :key="booking.id"
                                 class="border border-gray-200 rounded-lg p-4"
                             >
