@@ -103,46 +103,47 @@ export const api = {
             const data = await res.json();
             return { success: true, data, total: data.length };
         } catch (e) {
+            return { success: false };
             // fallback to mock
-            await delay(500);
-            let helpers = [...mockHelpers];
-            // ...existing filter logic from above...
-            if (filters.category) {
-                helpers = helpers.filter((h) =>
-                    h.categories.some((c) =>
-                        c.toLowerCase().includes(filters.category.toLowerCase())
-                    )
-                );
-            }
-            if (filters.minRate) {
-                helpers = helpers.filter(
-                    (h) => h.hourlyRate >= filters.minRate
-                );
-            }
-            if (filters.maxRate) {
-                helpers = helpers.filter(
-                    (h) => h.hourlyRate <= filters.maxRate
-                );
-            }
-            if (filters.minRating) {
-                helpers = helpers.filter((h) => h.rating >= filters.minRating);
-            }
-            if (filters.search) {
-                const searchLower = filters.search.toLowerCase();
-                helpers = helpers.filter(
-                    (h) =>
-                        h.name.toLowerCase().includes(searchLower) ||
-                        h.bio.toLowerCase().includes(searchLower) ||
-                        h.skills.some((s) =>
-                            s.toLowerCase().includes(searchLower)
-                        )
-                );
-            }
-            return {
-                success: true,
-                data: helpers,
-                total: helpers.length,
-            };
+            // await delay(500);
+            // let helpers = [...mockHelpers];
+            // // ...existing filter logic from above...
+            // if (filters.category) {
+            //     helpers = helpers.filter((h) =>
+            //         h.categories.some((c) =>
+            //             c.toLowerCase().includes(filters.category.toLowerCase())
+            //         )
+            //     );
+            // }
+            // if (filters.minRate) {
+            //     helpers = helpers.filter(
+            //         (h) => h.hourlyRate >= filters.minRate
+            //     );
+            // }
+            // if (filters.maxRate) {
+            //     helpers = helpers.filter(
+            //         (h) => h.hourlyRate <= filters.maxRate
+            //     );
+            // }
+            // if (filters.minRating) {
+            //     helpers = helpers.filter((h) => h.rating >= filters.minRating);
+            // }
+            // if (filters.search) {
+            //     const searchLower = filters.search.toLowerCase();
+            //     helpers = helpers.filter(
+            //         (h) =>
+            //             h.name.toLowerCase().includes(searchLower) ||
+            //             h.bio.toLowerCase().includes(searchLower) ||
+            //             h.skills.some((s) =>
+            //                 s.toLowerCase().includes(searchLower)
+            //             )
+            //     );
+            // }
+            // return {
+            //     success: true,
+            //     data: helpers,
+            //     total: helpers.length,
+            // };
         }
     },
     // async getUserRolesPermissions(userId) {

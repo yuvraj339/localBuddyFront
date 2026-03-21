@@ -151,7 +151,11 @@
                                     type="button"
                                     @click="
                                         $router.push(
-                                            `/chat?helper=${booking.customer_id}`
+                                            `/chat?helper=${
+                                                authStore.hasRole('customer')
+                                                    ? booking.helper_id
+                                                    : booking.customer_id
+                                            }`
                                         )
                                     "
                                     class="btn btn-secondary text-sm"

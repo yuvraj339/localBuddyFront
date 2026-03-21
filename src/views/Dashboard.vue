@@ -217,7 +217,9 @@
 import { onMounted } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { useBookingStore } from "../stores/booking";
+import { useHelperStore } from "../stores/helper";
 
+const helperStore = useHelperStore();
 const authStore = useAuthStore();
 const bookingStore = useBookingStore();
 
@@ -228,6 +230,7 @@ let pendingBookings = bookingStore.getBookings("pending");
 onMounted(async () => {
     await bookingStore.fetchBookings(authStore.user?.id, "customer");
     await authStore.getUser();
+    await helperStore.fetchHelpers();
 });
 
 const formatDate = (dateString) => {
