@@ -39,10 +39,11 @@
                                         >★</span
                                     >
                                     <span class="font-semibold text-lg">{{
-                                        helper.rating ?? "N/A"
+                                        reviewStore.averageRating ?? "N/A"
                                     }}</span>
                                     <span class="ml-2">
-                                        ({{ helper.reviewCount ?? 0 }} reviews)
+                                        ({{ reviewStore.reviews.length ?? 0 }}
+                                        reviews)
                                     </span>
                                     <span class="mx-3">•</span>
                                     <span
@@ -67,25 +68,44 @@
                         <h2 class="text-xl font-semibold mb-4 text-gray-900">
                             Reviews
                         </h2>
-                        <div v-if="helper.reviews && helper.reviews.length > 0">
+                        <div
+                            v-if="
+                                reviewStore.reviews &&
+                                reviewStore.reviews.length > 0
+                            "
+                        >
                             <div
-                                v-for="review in helper.reviews"
+                                v-for="review in reviewStore.reviews"
                                 :key="review.id"
                                 class="mb-4 border-b pb-3"
                             >
-                                <div class="flex items-center mb-1">
-                                    <span class="text-yellow-400 mr-1">★</span>
-                                    <span class="font-semibold">{{
-                                        review.rating
-                                    }}</span>
-                                    <span class="ml-2 text-gray-500 text-xs">{{
-                                        new Date(
-                                            review.created_at
-                                        ).toLocaleDateString()
-                                    }}</span>
+                                <div
+                                    class="items-center mb-1 flex justify-between"
+                                >
+                                    <div>
+                                        <span
+                                            class="mr-1"
+                                            :class="[
+                                                review.rating < 3
+                                                    ? 'text-red-500'
+                                                    : 'text-green-500',
+                                            ]"
+                                            v-for="value in review.rating"
+                                            >★</span
+                                        >
+                                    </div>
+                                    <!-- <span class="font-semibold"></span> -->
+                                    <span
+                                        class="ml-2 text-gray-500 text-xs float-end"
+                                        >{{
+                                            new Date(
+                                                review.created_at
+                                            ).toLocaleDateString()
+                                        }}</span
+                                    >
                                 </div>
-                                <div class="text-gray-800">
-                                    {{ review.comment }}
+                                <div class="text-gray-800 capitalize">
+                                    {{ review.review }}
                                 </div>
                                 <div class="text-xs text-gray-500 mt-1">
                                     By
@@ -330,62 +350,24 @@
                     </div>
                 </div>
             </div>
-            <div class="card mt-6">
-                <h2 class="text-xl font-semibold mb-4 text-gray-900">
-                    Leave a Review
-                </h2>
-                <form
-                    @submit.prevent="handleReviewSubmit"
-                    v-if="authStore.isAuthenticated"
-                >
-                    <div class="mb-3">
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-1"
-                            >Rating</label
-                        >
-                        <select
-                            v-model.number="reviewForm.rating"
-                            required
-                            class="input"
-                        >
-                            <option disabled value="">Select rating</option>
-                            <option v-for="n in 5" :key="n" :value="n">
-                                {{ n }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-1"
-                            >Comment</label
-                        >
-                        <textarea
-                            v-model="reviewForm.comment"
-                            rows="3"
-                            class="input"
-                            required
-                            placeholder="Share your experience..."
-                        ></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        Submit Review
-                    </button>
-                </form>
-                <div v-else class="text-gray-500">Login to leave a review.</div>
-            </div>
+            <!-- <div class="card mt-6" v-if="helper && helper.id">
+                <HelperProfileRateReviewComponent :helperId="helper.id" />
+            </div> -->
         </div>
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, reactive } from "vue";
-import { api } from "../services/api";
+// import { api } from "../services/api";
 import { useRoute, useRouter } from "vue-router";
 import { useHelperStore } from "../stores/helper";
 import { useBookingStore } from "../stores/booking";
 import { usePaymentStore } from "../stores/payment";
 import { useAuthStore } from "../stores/auth";
+import { useReviewStore } from "../stores/review";
 import { helperAvatarSrc } from "../utils/util";
+// import HelperProfileRateReviewComponent from "../components/bookings/RateReviewComponent.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -395,7 +377,7 @@ const authStore = useAuthStore();
 const payment = usePaymentStore();
 
 const helper = computed(() => helperStore.currentHelper);
-
+const reviewStore = useReviewStore();
 const daysOfWeek = [
     "Monday",
     "Tuesday",
@@ -425,33 +407,11 @@ const totalAmount = computed(() => {
     return helper.value ? helper.value.hourlyRate * bookingForm.hours : 0;
 });
 
-const reviewForm = reactive({
-    rating: "",
-    comment: "",
-});
-
-const handleReviewSubmit = async () => {
-    if (!authStore.isAuthenticated) return;
-    const reviewData = {
-        helper_id: helper.value.id,
-        user_id: authStore.user.id,
-        rating: reviewForm.rating,
-        comment: reviewForm.comment,
-    };
-    const resp = await api.submitReview(reviewData);
-    if (resp.success) {
-        alert("Review submitted successfully!");
-        reviewForm.rating = "";
-        reviewForm.comment = "";
-        // Refresh helper details to show new review
-        await helperStore.fetchHelper(helper.value.id);
-    } else {
-        alert(resp.error || "Failed to submit review");
+onMounted(async () => {
+    await helperStore.fetchHelper(route.params.id);
+    if (helper.value.id) {
+        reviewStore.fetchReviews(helper.value.id);
     }
-};
-
-onMounted(() => {
-    helperStore.fetchHelper(route.params.id);
 });
 
 const handleBooking = async () => {

@@ -15,9 +15,9 @@ export const useAuthStore = defineStore("auth", {
     getters: {
         isAuthenticated: (state) => !!state.token,
         hasRole: (state) => (role) =>
-            state.roles.filter((r) => r.name === role).length > 0,
+            state.user_roles.filter((r) => r.name === role).length > 0,
         hasPermission: (state) => (perm) => state.permissions.includes(perm),
-        getRoles: (state) => state.roles,
+        getRoles: (state) => state.user_roles,
         getPermissions: (state) => (role) => state.permissions[role] || [],
     },
 
@@ -113,6 +113,7 @@ export const useAuthStore = defineStore("auth", {
             const resp = await api.getUserProfile();
             if (resp.success) {
                 this.user = resp.data;
+                localStorage.setItem("user", JSON.stringify(resp.data));
                 return true;
             } else {
                 return false;

@@ -19,6 +19,10 @@ export const useHelperStore = defineStore("helper", {
 
     getters: {
         filteredHelpers: (state) => state.helpers,
+        // completedJobs: (state) => {
+        //     if
+
+        // },
         topRatedHelpers: (state) =>
             [...state.helpers].sort((a, b) => b.rating - a.rating).slice(0, 6),
     },

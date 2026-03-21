@@ -588,7 +588,7 @@ export const api = {
         }
     },
 
-    async fetchReviews({ helperId, userId, bookingId } = {}) {
+    async fetchBookingReviews({ helperId, userId, bookingId } = {}) {
         try {
             const { payload, token } = isTokenExpired();
             const params = new URLSearchParams();
@@ -597,6 +597,22 @@ export const api = {
             if (bookingId) params.append("booking_id", bookingId);
             const res = await fetch(
                 `${BASE_URL}/api/v1/reviews?${params.toString()}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            if (!res.ok) throw new Error("Failed to fetch reviews");
+            const data = await res.json();
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+    async fetchReviews(helperId) {
+        try {
+            const { payload, token } = isTokenExpired();
+            const res = await fetch(
+                `${BASE_URL}/api/v1/reviews/helper/${helperId}`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }

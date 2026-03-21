@@ -75,7 +75,6 @@
                     </template>
 
                     <template v-else>
-                        <!-- {{ authStore }} -->
                         {{ authStore.user?.full_name }}&nbsp;
                         <div class="relative" ref="dropdown">
                             <button

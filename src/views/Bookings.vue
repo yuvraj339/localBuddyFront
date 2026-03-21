@@ -180,6 +180,13 @@
                                         Update Status
                                     </option>
                                     <option
+                                        disabled
+                                        value=""
+                                        v-if="authStore.hasRole('customer')"
+                                    >
+                                        {{ booking.status }}
+                                    </option>
+                                    <option
                                         v-for="status in bookingStatusList"
                                         :key="status"
                                         :value="status"
@@ -187,12 +194,12 @@
                                         {{ status.replace("_", " ") }}
                                     </option>
                                 </select>
+                                <span v-else> {{ booking.status }}</span>
                                 <button
-                                    v-if="
-                                        booking.status === 'completed' &&
-                                        !booking.rating
+                                    v-if="postReview(postReview)"
+                                    @click="
+                                        reviewStore.openReviewModal(booking)
                                     "
-                                    @click="openReviewModal(booking)"
                                     class="btn btn-primary text-sm"
                                 >
                                     ⭐ Rate & Review
@@ -214,94 +221,51 @@
                 </div>
             </div>
         </div>
-
+        {{ reviewStore.selectedBooking }}
         <div
-            v-if="showReviewModal"
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            @click.self="closeReviewModal"
+            class="card mt-6"
+            v-if="
+                reviewStore.selectedBooking &&
+                reviewStore.selectedBooking.helper_id
+            "
         >
-            <div class="bg-white rounded-xl p-6 max-w-md w-full">
-                <h3 class="text-xl font-semibold mb-4 text-gray-900">
-                    Rate Your Experience
-                </h3>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Rating
-                    </label>
-                    <div class="flex space-x-2">
-                        <button
-                            v-for="star in 5"
-                            :key="star"
-                            @click="reviewForm.rating = star"
-                            class="text-3xl transition-colors"
-                            :class="
-                                star <= reviewForm.rating
-                                    ? 'text-yellow-400'
-                                    : 'text-gray-300'
-                            "
-                        >
-                            ★
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Review
-                    </label>
-                    <textarea
-                        v-model="reviewForm.review"
-                        rows="4"
-                        class="input"
-                        placeholder="Share your experience..."
-                    ></textarea>
-                </div>
-
-                <div class="flex space-x-3">
-                    <button
-                        @click="closeReviewModal"
-                        class="btn btn-secondary flex-1"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        @click="submitReview"
-                        class="btn btn-primary flex-1"
-                    >
-                        Submit Review
-                    </button>
-                </div>
-            </div>
+            <RateReviewComponent
+                :helperId="reviewStore.selectedBooking.helper_id"
+            />
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { useBookingStore } from "../stores/booking";
+import { useReviewStore } from "../stores/review";
 import { avatarSrc } from "../utils/util";
 import TabsComponent from "../components/bookings/TabsComponent.vue";
+import RateReviewComponent from "../components/bookings/RateReviewComponent.vue";
+
 const authStore = useAuthStore();
 const bookingStore = useBookingStore();
+const reviewStore = useReviewStore();
 
 const activeTab = ref("upcoming");
-const showReviewModal = ref(false);
-const selectedBooking = ref(null);
 
-const bookingStatusList = [
-    "pending",
-    "accepted",
-    "rejected",
-    "in_progress",
-    "completed",
-    "cancelled",
-    "disputed",
-];
-const reviewForm = reactive({
-    rating: 5,
-    review: "",
+const bookingStatusList = computed(() => {
+    debugger;
+    let IsCustomer = authStore.hasRole("customer");
+    if (IsCustomer) {
+        return ["cancelled", "disputed"];
+    } else
+        return [
+            "pending",
+            "accepted",
+            "rejected",
+            "in_progress",
+            "completed",
+            "cancelled",
+            "disputed",
+        ];
 });
 
 const currentBookings = computed(() => {
@@ -311,7 +275,13 @@ const currentBookings = computed(() => {
 onMounted(() => {
     bookingStore.fetchBookings(authStore.user?.id, authStore.user?.role);
 });
-
+const postReview = (booking) => {
+    return (
+        authStore.hasRole("customer") &&
+        booking.status === "completed" &&
+        !booking.rating
+    );
+};
 const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -340,22 +310,5 @@ const sendSOS = (id) => {
     ) {
         alert("Emergency alert sent! Help is on the way.");
     }
-};
-
-const openReviewModal = (booking) => {
-    selectedBooking.value = booking;
-    showReviewModal.value = true;
-};
-
-const closeReviewModal = () => {
-    showReviewModal.value = false;
-    selectedBooking.value = null;
-    reviewForm.rating = 5;
-    reviewForm.review = "";
-};
-
-const submitReview = () => {
-    alert("Thank you for your review!");
-    closeReviewModal();
 };
 </script>
