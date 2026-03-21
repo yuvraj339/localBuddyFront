@@ -53,7 +53,9 @@
                         </h2>
 
                         <div
-                            v-if="bookingStore.pendingBookings.length === 0"
+                            v-if="
+                                bookingStore.getBookings('pending').length == 0
+                            "
                             class="text-center py-8"
                         >
                             <div class="text-6xl mb-4">📭</div>
@@ -62,7 +64,9 @@
 
                         <div v-else class="space-y-4">
                             <div
-                                v-for="booking in bookingStore.pendingBookings"
+                                v-for="booking in bookingStore.getBookings(
+                                    'pending'
+                                )"
                                 :key="booking.id"
                                 class="border border-gray-200 rounded-lg p-4"
                             >
@@ -77,7 +81,7 @@
                                             {{ booking.location }}
                                         </p>
                                     </div>
-                                    <span class="badge badge-warning"
+                                    <span class="badge badge-warning capitalize"
                                         >Pending</span
                                     >
                                 </div>

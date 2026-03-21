@@ -7,43 +7,6 @@
                 </h1>
                 <p class="text-gray-600">View and manage your bookings</p>
             </div>
-            <!-- <div class="mb-6 border-b border-gray-200">
-                <nav class="flex space-x-8">
-                    <button
-                        @click="activeTab = 'upcoming'"
-                        :class="[
-                            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
-                            activeTab === 'upcoming'
-                                ? 'border-primary-500 text-primary-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                        ]"
-                    >
-                        
-                    </button>
-                    <button
-                        @click="activeTab = 'pending'"
-                        :class="[
-                            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
-                            activeTab === 'pending'
-                                ? 'border-primary-500 text-primary-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                        ]"
-                    >
-                        Pending ({{ bookingStore.pendingBookings.length }})
-                    </button>
-                    <button
-                        @click="activeTab = 'completed'"
-                        :class="[
-                            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
-                            activeTab === 'completed'
-                                ? 'border-primary-500 text-primary-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                        ]"
-                    >
-                        Completed ({{ bookingStore.completedBookings.length }})
-                    </button>
-                </nav>
-            </div> -->
             <TabsComponent
                 :activeTab="activeTab"
                 @update:activeTab="activeTab = $event"
@@ -90,16 +53,28 @@
                                     </p>
                                 </div>
                                 <span
+                                    class="capitalize"
                                     :class="[
                                         'badge',
-                                        booking.status === 'upcoming'
+                                        [
+                                            'upcoming',
+                                            'accepted',
+                                            'in_progress',
+                                        ].includes(booking.status)
                                             ? 'badge-success'
                                             : '',
                                         booking.status === 'pending'
                                             ? 'badge-warning'
                                             : '',
-                                        booking.status === 'completed'
+                                        ['completed'].includes(booking.status)
                                             ? 'badge-primary'
+                                            : '',
+                                        [
+                                            'rejected',
+                                            'cancelled',
+                                            'disputed',
+                                        ].includes(booking.status)
+                                            ? 'badge-danger'
                                             : '',
                                     ]"
                                 >
@@ -147,7 +122,10 @@
                                 <button
                                     v-if="booking.status === 'upcoming'"
                                     @click="
-                                        bookingStatus(booking.id, 'cancelled')
+                                        updateBookingStatus(
+                                            booking.id,
+                                            'cancelled'
+                                        )
                                     "
                                     class="btn btn-danger text-sm"
                                 >
@@ -342,13 +320,6 @@ const formatDate = (dateString) => {
         year: "numeric",
     });
 };
-
-// const cancelBooking = async (id) => {
-//     if (confirm("Are you sure you want to cancel this booking?")) {
-//         await bookingStore.updateBookingStatus(id, "cancelled");
-//         alert("Booking cancelled successfully");
-//     }
-// };
 
 const updateBookingStatus = async (id, status) => {
     if (confirm(`Are you sure you want to ${status} this booking?`)) {
