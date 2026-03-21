@@ -181,9 +181,9 @@
                     </h2>
                     <div class="space-y-4 mb-3">
                         <div class="font-medium text-gray-800 mb-1">Roles:</div>
-                        <div v-if="authStore.roles.length > 0">
+                        <div v-if="authStore.user_roles.length > 0">
                             <span
-                                v-for="role in authStore.roles"
+                                v-for="role in authStore.user_roles"
                                 :key="role"
                                 class="badge badge-primary mr-2 capitalize"
                                 >{{ role.name }}
@@ -203,7 +203,7 @@
                         >
                             <span
                                 v-for="perm in authStore.getPermissions(
-                                    authStore.roles[0]?.id
+                                    authStore.user_roles[0]?.id
                                 )"
                                 :key="perm.name"
                                 class="badge badge-primary capitalize cursor-pointer"
