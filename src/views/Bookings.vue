@@ -194,7 +194,6 @@
                                         {{ status.replace("_", " ") }}
                                     </option>
                                 </select>
-                                <span v-else> {{ booking.status }}</span>
                                 <button
                                     v-if="postReview(postReview)"
                                     @click="
