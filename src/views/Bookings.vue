@@ -255,7 +255,6 @@ const reviewStore = useReviewStore();
 const activeTab = ref("upcoming");
 
 const bookingStatusList = computed(() => {
-    debugger;
     let IsCustomer = authStore.hasRole("customer");
     if (IsCustomer) {
         return ["cancelled", "disputed"];

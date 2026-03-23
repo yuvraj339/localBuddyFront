@@ -192,16 +192,27 @@
                             <div>
                                 <label
                                     class="block text-sm font-medium text-gray-700 mb-2"
+                                    for="date"
                                 >
-                                    Date
+                                    Date <span class="text-red-500">*</span>
+                                    <VueDatePicker
+                                        required
+                                        auto-apply
+                                        v-model="bookingForm.date"
+                                        :min-date="new Date()"
+                                        :disabled-dates="
+                                            disableUnavailableDates
+                                        "
+                                        :formats="{
+                                            input: 'yyyy-MM-dd',
+                                            preview: 'yyyy-MM-dd',
+                                        }"
+                                        timezone="utc"
+                                    />
                                 </label>
-                                <input
-                                    v-model="bookingForm.date"
-                                    type="date"
-                                    required
-                                    class="input"
-                                    :min="minDate"
-                                />
+                                <span class="text-red-500" v-if="error.dateErr"
+                                    >Date is required</span
+                                >
                             </div>
 
                             <div>
@@ -209,13 +220,19 @@
                                     class="block text-sm font-medium text-gray-700 mb-2"
                                 >
                                     Start Time
+                                    <span class="text-red-500">*</span>
                                 </label>
-                                <input
-                                    v-model="bookingForm.startTime"
-                                    type="time"
+                                <VueDatePicker
                                     required
-                                    class="input"
+                                    v-model="bookingForm.startTime"
+                                    time-picker
+                                    :disabled-times="bookedSlots"
                                 />
+                                <span
+                                    class="text-red-500"
+                                    v-if="error.startTimeErr"
+                                    >Start time is required</span
+                                >
                             </div>
 
                             <div>
@@ -237,7 +254,7 @@
                                 <label
                                     class="block text-sm font-medium text-gray-700 mb-2"
                                 >
-                                    Category
+                                    Category <span class="text-red-500">*</span>
                                 </label>
                                 <select
                                     v-model="bookingForm.category"
@@ -274,6 +291,7 @@
                                     class="block text-sm font-medium text-gray-700 mb-2"
                                 >
                                     Payment Method
+                                    <span class="text-red-500">*</span>
                                 </label>
                                 <select
                                     v-model="bookingForm.paymentMethod"
@@ -367,7 +385,6 @@ import { usePaymentStore } from "../stores/payment";
 import { useAuthStore } from "../stores/auth";
 import { useReviewStore } from "../stores/review";
 import { helperAvatarSrc } from "../utils/util";
-// import HelperProfileRateReviewComponent from "../components/bookings/RateReviewComponent.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -388,12 +405,57 @@ const daysOfWeek = [
     "Sunday",
 ];
 
-const minDate = computed(() => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split("T")[0];
-});
+// const availableDays = ["2023-10-10", "2023-10-15", "2023-10-20"]; // Example available dates
 
+// const formatDate = (date) => {
+//     const d = new Date(date);
+//     const year = d.getFullYear();
+//     const month = String(d.getMonth() + 1).padStart(2, "0");
+//     const day = String(d.getDate()).padStart(2, "0");
+//     return `${year}-${month}-${day}`;
+// };
+
+// const isDateAvailable = (date) => {
+//     if (!date) return true;
+//     debugger;
+//     const dayIndex = new Date(date).getDay();
+//     return availableDates.value.includes(dayIndex);
+// };
+
+// const isDateAvailable = (date) => {
+//     const formattedDate = formatDate(date);
+//     return availableDays.includes(formattedDate);
+// };
+// const disabledDates = [
+//     new Date(),
+//     addDays(new Date(), 1),
+//     addDays(new Date(), 2),
+// ];
+const disableUnavailableDates = (date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to midnight for comparison
+    const selectedDate = new Date(date);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    // Disable past dates
+    // if (selectedDate < today) {
+    //     return true;
+    // }
+
+    // Enable only dates matching helper's availability
+    const dayOfWeek = daysOfWeek[selectedDate.getDay()];
+    return helper.value.availability.includes(dayOfWeek);
+};
+
+// const minDate = computed(() => {
+//     const tomorrow = new Date();
+//     tomorrow.setDate(tomorrow.getDate() + 1);
+//     return tomorrow.toISOString().split("T")[0];
+// });
+const error = reactive({
+    dateErr: false,
+    startTimeErr: false,
+});
 const bookingForm = reactive({
     date: "",
     startTime: "",
@@ -407,21 +469,64 @@ const totalAmount = computed(() => {
     return helper.value ? helper.value.hourlyRate * bookingForm.hours : 0;
 });
 
+// const availableDates = computed(() => {
+//     if (!helper.value || !helper.value.availability) return [];
+//     return helper.value.availability.map((day) => daysOfWeek.indexOf(day));
+// });
+
+const bookedSlots = ref([]);
+
+const fetchBookedSlots = async () => {
+    if (helper.value && helper.value.id) {
+        await bookingStore.fetchBookings(helper.value.id, "helper");
+        if (!bookingStore.bookings) return;
+        bookedSlots.value = bookingStore.bookings
+            .filter(
+                (b) =>
+                    b.status === "pending" ||
+                    b.status === "accepted" ||
+                    b.status === "in_progress"
+            )
+            .flatMap((b) => {
+                const start = new Date(`${b.date}T${b.start_time}`);
+                const end = new Date(`${b.date}T${b.end_time}`);
+                const disabledTimes = [];
+                while (start < end) {
+                    disabledTimes.push({
+                        hours: start.getHours(),
+                        minutes: start.getMinutes(),
+                    });
+                    start.setMinutes(start.getMinutes() + 15); // Increment by 15 minutes
+                }
+                return disabledTimes;
+            });
+    }
+};
+
 onMounted(async () => {
     await helperStore.fetchHelper(route.params.id);
     if (helper.value.id) {
         reviewStore.fetchReviews(helper.value.id);
+        await fetchBookedSlots();
     }
 });
-
 const handleBooking = async () => {
     if (!authStore.isAuthenticated) {
         router.push("/login");
         return;
     }
-
+    error.dateErr = false;
+    error.startTimeErr = false;
     if (!bookingForm.paymentMethod) {
         alert("Please select a payment method.");
+        return;
+    }
+    if (!bookingForm.date) {
+        error.dateErr = true;
+        return;
+    }
+    if (!bookingForm.startTime) {
+        error.startTimeErr = true;
         return;
     }
 
@@ -431,7 +536,9 @@ const handleBooking = async () => {
         helper_name: helper.value.name,
         helper_avatar: helper.value.avatar,
         date: bookingForm.date,
-        start_time: bookingForm.startTime,
+        start_time: `${bookingForm.startTime.hours
+            .toString()
+            .padStart(2, "0")}:${bookingForm.startTime.minutes}`,
         end_time: calculateEndTime(),
         hours: bookingForm.hours,
         rate: helper.value.hourlyRate,
@@ -446,22 +553,16 @@ const handleBooking = async () => {
 
     if (booking) {
         // Trigger payment collection if UPI is selected
-        if (bookingForm.paymentMethod === "UPI") {
-            const paymentData = {
-                booking_id: booking.id,
-                customer_id: authStore.user.id,
-                helper_id: helper.value.id,
-                amount: totalAmount.value,
-                payment_method: bookingForm.paymentMethod,
-            };
-            const paymentResponse = await payment.createPayment(paymentData);
-            if (paymentResponse.success) {
-                alert("Payment successful!");
-            } else {
-                alert("Payment failed. Please try again.");
-                return;
-            }
-        }
+        // if (bookingForm.paymentMethod === "UPI") {
+        const paymentData = {
+            booking_id: booking.id,
+            customer_id: authStore.user.id,
+            helper_id: helper.value.id,
+            amount: totalAmount.value,
+            payment_method: bookingForm.paymentMethod,
+        };
+        await payment.createPayment(paymentData);
+        // }
 
         alert("Booking request sent successfully!");
         router.push("/bookings");
@@ -469,8 +570,10 @@ const handleBooking = async () => {
 };
 
 const calculateEndTime = () => {
-    const [hours, minutes] = bookingForm.startTime.split(":");
-    const endHour = parseInt(hours) + bookingForm.hours;
-    return `${endHour.toString().padStart(2, "0")}:${minutes}`;
+    // const [hours, minutes] = bookingForm.startTime.split(":");
+    const endHour = parseInt(bookingForm.startTime.hours) + bookingForm.hours;
+    return `${endHour.toString().padStart(2, "0")}:${
+        bookingForm.startTime.minutes
+    }`;
 };
 </script>

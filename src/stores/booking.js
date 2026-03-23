@@ -1,5 +1,6 @@
 ﻿import { defineStore } from "pinia";
 import { api } from "../services/api";
+import { format, isToday, isPast, isFuture } from "date-fns";
 
 export const useBookingStore = defineStore("booking", {
     state: () => ({
@@ -12,10 +13,6 @@ export const useBookingStore = defineStore("booking", {
     getters: {
         getBookings: (state) => (status) =>
             state.bookings.filter((b) => b.status === status),
-        // completedBookings: (state) =>
-        //     state.bookings.filter((b) => b.status === "completed"),
-        // pendingBookings: (state) =>
-        //     state.bookings.filter((b) => b.status === "pending"),
     },
 
     actions: {
@@ -27,7 +24,17 @@ export const useBookingStore = defineStore("booking", {
                 const response = await api.getBookings(userId, role);
 
                 if (response.success) {
-                    this.bookings = response.data;
+                    this.bookings = response.data.map((booking) => {
+                        const bookingDate = new Date(booking.date);
+                        if (isToday(bookingDate)) {
+                            booking.status = "pending";
+                        } else if (isPast(bookingDate)) {
+                            booking.status = "completed";
+                        } else if (isFuture(bookingDate)) {
+                            booking.status = "upcoming";
+                        }
+                        return booking;
+                    });
                 } else {
                     this.error = response.error;
                 }

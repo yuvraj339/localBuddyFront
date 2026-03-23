@@ -37,7 +37,7 @@
                 <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">
                     Popular Categories
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div
                         v-for="category in categoryStore.categories"
                         :key="category.id"
@@ -71,7 +71,7 @@
                 <p class="text-center text-gray-600 mb-12">
                     Verified professionals trusted by thousands
                 </p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div
                         v-for="helper in helperStore.topRatedHelpers"
                         :key="helper.id"

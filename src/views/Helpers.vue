@@ -134,6 +134,26 @@
                             class="card hover:shadow-xl transition-shadow cursor-pointer"
                             @click="$router.push(`/helper/${helper.id}`)"
                         >
+                            <span
+                                v-if="!helper.isAvailable"
+                                title="Helper is not available currently"
+                                class="flex justify-end"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="1.5"
+                                    stroke="currentColor"
+                                    class="size-6 text-red-500"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636"
+                                    />
+                                </svg>
+                            </span>
                             <div class="flex items-start space-x-4">
                                 <img
                                     :src="helperAvatarSrc(helper.avatar)"
@@ -149,7 +169,7 @@
                                         </h3>
                                         <span
                                             v-if="helper.verified"
-                                            class="ml-2 text-blue-500"
+                                            class="ml-3 bg-green-600 text-[rgb(247,247,247)] rounded-full p-[2px] max-w-[20px] max-h-[20px] flex items-center text-base"
                                             title="Verified"
                                         >
                                             ✓
@@ -184,7 +204,7 @@
                                         <span
                                             v-for="category in helper.categories.slice(
                                                 0,
-                                                2,
+                                                2
                                             )"
                                             :key="category"
                                             class="badge badge-primary text-xs"
@@ -254,7 +274,7 @@ watch(
             filters.category = newCategory;
             applyFilters();
         }
-    },
+    }
 );
 
 const applyFilters = () => {

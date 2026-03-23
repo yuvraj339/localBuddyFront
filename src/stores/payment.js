@@ -16,6 +16,12 @@ export const usePaymentStore = defineStore("payment", {
             const response = await api.makePayment(paymentData);
             if (response.success) {
                 this.paymentRes = response.data;
+                alert(
+                    "Details added successful, payment will be collect at your door stap!"
+                );
+            } else {
+                alert("Payment failed. Please try again.");
+                return false;
             }
         },
     },
