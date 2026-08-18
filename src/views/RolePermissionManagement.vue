@@ -3,48 +3,34 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Header -->
             <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">
-                    Roles & Permissions Management
-                </h1>
-                <p class="text-gray-600">
-                    Manage system roles and their permissions
-                </p>
+                <Breadcrumbs :items="breadcrumbItems" />
             </div>
 
             <!-- Tabs Navigation -->
             <div class="mb-6 border-b border-gray-200">
                 <nav class="flex space-x-8">
-                    <button
-                        @click="activeTab = 'roles'"
-                        :class="[
-                            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
-                            activeTab === 'roles'
-                                ? 'border-primary-500 text-primary-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700',
-                        ]"
-                    >
+                    <button @click="activeTab = 'roles'" :class="[
+                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                        activeTab === 'roles'
+                            ? 'border-primary-500 text-primary-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700',
+                    ]">
                         Roles
                     </button>
-                    <button
-                        @click="activeTab = 'permissions'"
-                        :class="[
-                            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
-                            activeTab === 'permissions'
-                                ? 'border-primary-500 text-primary-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700',
-                        ]"
-                    >
+                    <button @click="activeTab = 'permissions'" :class="[
+                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                        activeTab === 'permissions'
+                            ? 'border-primary-500 text-primary-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700',
+                    ]">
                         Permissions
                     </button>
-                    <button
-                        @click="activeTab = 'assignments'"
-                        :class="[
-                            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
-                            activeTab === 'assignments'
-                                ? 'border-primary-500 text-primary-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700',
-                        ]"
-                    >
+                    <button @click="activeTab = 'assignments'" :class="[
+                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                        activeTab === 'assignments'
+                            ? 'border-primary-500 text-primary-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700',
+                    ]">
                         Role Assignments
                     </button>
                 </nav>
@@ -56,14 +42,11 @@
                     <h2 class="text-xl font-semibold text-gray-900">
                         Manage Roles
                     </h2>
-                    <button
-                        @click="
-                            showRoleModal = true;
-                            editingRole = null;
-                            newRole = { name: '', description: '' };
-                        "
-                        class="btn btn-primary"
-                    >
+                    <button @click="
+                        showRoleModal = true;
+                    editingRole = null;
+                    newRole = { name: '', description: '' };
+                    " class="btn btn-primary">
                         + Create Role
                     </button>
                 </div>
@@ -74,44 +57,29 @@
                 </div>
 
                 <div v-else class="space-y-4">
-                    <div
-                        v-for="role in roles"
-                        :key="role.id"
-                        class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
-                    >
+                    <div v-for="role in roles" :key="role.id"
+                        class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
-                                <h3
-                                    class="text-lg font-semibold text-gray-900 mb-2"
-                                >
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">
                                     {{ role.name }}
                                 </h3>
                                 <p class="text-gray-600 mb-4">
                                     {{ role.description }}
                                 </p>
                                 <div class="flex flex-wrap gap-2">
-                                    <span
-                                        v-for="perm in getRolePermissions(
-                                            role.id,
-                                        )"
-                                        :key="perm.id"
-                                        class="badge badge-info"
-                                    >
+                                    <span v-for="perm in getRolePermissions(
+                                        role.id,
+                                    )" :key="perm.id" class="badge badge-info">
                                         {{ perm.name }}
                                     </span>
                                 </div>
                             </div>
                             <div class="flex space-x-2 ml-4">
-                                <button
-                                    @click="editRole(role)"
-                                    class="btn btn-secondary text-sm"
-                                >
+                                <button @click="editRole(role)" class="btn btn-secondary text-sm">
                                     Edit
                                 </button>
-                                <button
-                                    @click="deleteRole(role.id)"
-                                    class="btn btn-danger text-sm"
-                                >
+                                <button @click="deleteRole(role.id)" class="btn btn-danger text-sm">
                                     Delete
                                 </button>
                             </div>
@@ -126,13 +94,10 @@
                     <h2 class="text-xl font-semibold text-gray-900">
                         Manage Permissions
                     </h2>
-                    <button
-                        @click="
-                            showPermissionModal = true;
-                            newPermission = { name: '', description: '' };
-                        "
-                        class="btn btn-primary"
-                    >
+                    <button @click="
+                        showPermissionModal = true;
+                    newPermission = { name: '', description: '' };
+                    " class="btn btn-primary">
                         + Create Permission
                     </button>
                 </div>
@@ -147,23 +112,19 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                >
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Permission Name
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                >
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Description
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                >
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Used in Roles
                                 </th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                >
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
@@ -189,19 +150,13 @@
                                         role(s)
                                     </span>
                                 </td>
-                                <td
-                                    class="px-6 py-4 whitespace-nowrap text-sm space-x-2"
-                                >
-                                    <button
-                                        @click="editPermission(perm)"
-                                        class="text-primary-600 hover:text-primary-700"
-                                    >
+                                <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                                    <button @click="editPermission(perm)"
+                                        class="text-primary-600 hover:text-primary-700">
                                         Edit
                                     </button>
-                                    <button
-                                        @click="deletePermission(perm.id)"
-                                        class="text-danger-600 hover:text-danger-700"
-                                    >
+                                    <button @click="deletePermission(perm.id)"
+                                        class="text-danger-600 hover:text-danger-700">
                                         Delete
                                     </button>
                                 </td>
@@ -218,37 +173,22 @@
                 </h2>
 
                 <div class="space-y-6">
-                    <div
-                        v-for="role in roles"
-                        :key="role.id"
-                        class="border border-gray-200 rounded-lg p-6"
-                    >
+                    <div v-for="role in roles" :key="role.id" class="border border-gray-200 rounded-lg p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">
                             {{ role.name }}
                         </h3>
 
-                        <div
-                            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
-                        >
-                            <label
-                                v-for="perm in permissions"
-                                :key="perm.id"
-                                class="flex items-center space-x-2 cursor-pointer"
-                            >
-                                <input
-                                    type="checkbox"
-                                    :checked="
-                                        roleHasPermission(role.id, perm.id)
-                                    "
-                                    @change="
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            <label v-for="perm in permissions" :key="perm.id"
+                                class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" :checked="roleHasPermission(role.id, perm.id)
+                                    " @change="
                                         toggleRolePermission(
                                             role.id,
                                             perm.id,
                                             $event,
                                         )
-                                    "
-                                    class="w-4 h-4 text-primary-600 rounded"
-                                />
+                                        " class="w-4 h-4 text-primary-600 rounded" />
                                 <span class="text-sm text-gray-700">{{
                                     perm.name
                                 }}</span>
@@ -266,10 +206,8 @@
         </div>
 
         <!-- ROLE MODAL -->
-        <div
-            v-if="showRoleModal"
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-        >
+        <div v-if="showRoleModal"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-lg shadow-lg max-w-md w-full">
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">
@@ -278,62 +216,39 @@
 
                     <div class="space-y-4">
                         <div>
-                            <label
-                                class="block text-sm font-medium text-gray-700 mb-2"
-                            >
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Role Name *
                             </label>
-                            <input
-                                v-model="newRole.name"
-                                type="text"
-                                placeholder="e.g., Moderator"
-                                class="input w-full"
-                            />
+                            <input v-model="newRole.name" type="text" placeholder="e.g., Moderator"
+                                class="input w-full" />
                         </div>
 
                         <div>
-                            <label
-                                class="block text-sm font-medium text-gray-700 mb-2"
-                            >
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Description
                             </label>
-                            <textarea
-                                v-model="newRole.description"
-                                placeholder="Role description"
-                                class="input w-full"
-                                rows="4"
-                            ></textarea>
+                            <textarea v-model="newRole.description" placeholder="Role description" class="input w-full"
+                                rows="4"></textarea>
                         </div>
 
                         <div v-if="editingRole" class="border-t pt-4">
-                            <label
-                                class="block text-sm font-medium text-gray-700 mb-3"
-                            >
+                            <label class="block text-sm font-medium text-gray-700 mb-3">
                                 Permissions
                             </label>
                             <div class="space-y-2 max-h-40 overflow-y-auto">
-                                <label
-                                    v-for="perm in permissions"
-                                    :key="perm.id"
-                                    class="flex items-center space-x-2 cursor-pointer"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        :checked="
-                                            roleHasPermission(
-                                                editingRole.id,
-                                                perm.id,
-                                            )
-                                        "
-                                        @change="
+                                <label v-for="perm in permissions" :key="perm.id"
+                                    class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" :checked="roleHasPermission(
+                                        editingRole.id,
+                                        perm.id,
+                                    )
+                                        " @change="
                                             toggleRolePermission(
                                                 editingRole.id,
                                                 perm.id,
                                                 $event,
                                             )
-                                        "
-                                        class="w-4 h-4 text-primary-600 rounded"
-                                    />
+                                            " class="w-4 h-4 text-primary-600 rounded" />
                                     <span class="text-sm text-gray-700">{{
                                         perm.name
                                     }}</span>
@@ -343,19 +258,13 @@
                     </div>
 
                     <div class="mt-6 flex space-x-3">
-                        <button
-                            @click="
-                                showRoleModal = false;
-                                editingRole = null;
-                            "
-                            class="btn btn-secondary flex-1"
-                        >
+                        <button @click="
+                            showRoleModal = false;
+                        editingRole = null;
+                        " class="btn btn-secondary flex-1">
                             Cancel
                         </button>
-                        <button
-                            @click="saveRole"
-                            class="btn btn-primary flex-1"
-                        >
+                        <button @click="saveRole" class="btn btn-primary flex-1">
                             {{ editingRole ? "Update" : "Create" }}
                         </button>
                     </div>
@@ -364,10 +273,8 @@
         </div>
 
         <!-- PERMISSION MODAL -->
-        <div
-            v-if="showPermissionModal"
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-        >
+        <div v-if="showPermissionModal"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-lg shadow-lg max-w-md w-full">
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">
@@ -380,48 +287,30 @@
 
                     <div class="space-y-4">
                         <div>
-                            <label
-                                class="block text-sm font-medium text-gray-700 mb-2"
-                            >
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Permission Name *
                             </label>
-                            <input
-                                v-model="newPermission.name"
-                                type="text"
-                                placeholder="e.g., manage_users"
-                                class="input w-full"
-                            />
+                            <input v-model="newPermission.name" type="text" placeholder="e.g., manage_users"
+                                class="input w-full" />
                         </div>
 
                         <div>
-                            <label
-                                class="block text-sm font-medium text-gray-700 mb-2"
-                            >
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Description
                             </label>
-                            <textarea
-                                v-model="newPermission.description"
-                                placeholder="Permission description"
-                                class="input w-full"
-                                rows="4"
-                            ></textarea>
+                            <textarea v-model="newPermission.description" placeholder="Permission description"
+                                class="input w-full" rows="4"></textarea>
                         </div>
                     </div>
 
                     <div class="mt-6 flex space-x-3">
-                        <button
-                            @click="
-                                showPermissionModal = false;
-                                editingPermission = null;
-                            "
-                            class="btn btn-secondary flex-1"
-                        >
+                        <button @click="
+                            showPermissionModal = false;
+                        editingPermission = null;
+                        " class="btn btn-secondary flex-1">
                             Cancel
                         </button>
-                        <button
-                            @click="savePermission"
-                            class="btn btn-primary flex-1"
-                        >
+                        <button @click="savePermission" class="btn btn-primary flex-1">
                             {{ editingPermission ? "Update" : "Create" }}
                         </button>
                     </div>
@@ -430,15 +319,10 @@
         </div>
 
         <!-- Toast Notification -->
-        <div
-            v-if="notification"
-            class="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg max-w-sm"
-            :class="
-                notification.type === 'success'
-                    ? 'bg-success-500 text-white'
-                    : 'bg-danger-500 text-white'
-            "
-        >
+        <div v-if="notification" class="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg max-w-sm" :class="notification.type === 'success'
+            ? 'bg-success-500 text-white'
+            : 'bg-danger-500 text-white'
+            ">
             {{ notification.message }}
         </div>
     </div>
@@ -447,16 +331,13 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { api } from "../services/api";
-import { useAuthStore } from "../stores/auth";
-import { useRouter } from "vue-router";
+import Breadcrumbs from "../components/Breadcrumbs.vue";
 
-const router = useRouter();
-const authStore = useAuthStore();
-
-// Check if user is admin
-// if (!authStore.hasRole("admin")) {
-//     router.push("/dashboard");
-// }
+const breadcrumbItems = [
+    { label: "Home", to: "/", icon: true },
+    { label: "Admin", to: "/admin" },
+    { label: "Roles & Permissions Management" }, // Last item has no 'to' prop and renders as non-clickable
+]
 
 const activeTab = ref("roles");
 const roles = ref([]);

@@ -19,7 +19,7 @@ const reviewForm = reactive({
 });
 
 onMounted(() => {
-    alert("Not is use for now");
+    alert("Not in use for now");
     reviewStore.fetchReviews(props.helperId);
 });
 
@@ -48,34 +48,18 @@ const handleReviewSubmit = async () => {
 <template>
     <div>
         <h2 class="text-xl font-semibold mb-4 text-gray-900">Rate & Review</h2>
-        <form
-            v-if="authStore.isAuthenticated"
-            @submit.prevent="handleReviewSubmit"
-        >
+        <form v-if="authStore.isAuthenticated" @submit.prevent="handleReviewSubmit">
             <div class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                    >Rating</label
-                >
-                <select
-                    v-model.number="reviewForm.rating"
-                    required
-                    class="input"
-                >
+                <label class="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                <select v-model.number="reviewForm.rating" required class="input">
                     <option disabled value="">Select rating</option>
                     <option v-for="n in 5" :key="n" :value="n">{{ n }}</option>
                 </select>
             </div>
             <div class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                    >Comment</label
-                >
-                <textarea
-                    v-model="reviewForm.comment"
-                    rows="3"
-                    class="input"
-                    required
-                    placeholder="Share your experience..."
-                ></textarea>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Comment</label>
+                <textarea v-model="reviewForm.comment" rows="3" class="input" required
+                    placeholder="Share your experience..."></textarea>
             </div>
             <button type="submit" class="btn btn-primary">Submit Review</button>
         </form>
@@ -83,17 +67,13 @@ const handleReviewSubmit = async () => {
 
         <div v-if="reviewStore.reviews.length > 0" class="mt-6">
             <h3 class="text-lg font-semibold mb-4 text-gray-900">Reviews</h3>
-            <div
-                v-for="review in reviewStore.reviews"
-                :key="review.id"
-                class="mb-4 border-b pb-3"
-            >
+            <div v-for="review in reviewStore.reviews" :key="review.id" class="mb-4 border-b pb-3">
                 <div class="flex items-center mb-1">
                     <span class="text-yellow-400 mr-1">★</span>
                     <span class="font-semibold">{{ review.rating }}</span>
                     <span class="ml-2 text-gray-500 text-xs">{{
                         new Date(review.created_at).toLocaleDateString()
-                    }}</span>
+                        }}</span>
                 </div>
                 <div class="text-gray-800">{{ review.review }}</div>
             </div>
