@@ -977,14 +977,29 @@ export const api = {
         }
     },
 
-    async getPermissions() {
+    async getPermissions(params = {}) {
         try {
             const { payload, token } = isTokenExpired();
-            const res = await fetch(`${BASE_URL}/api/v1/rbac/permissions`, {
+            const query = new URLSearchParams(params);
+            const res = await fetch(`${BASE_URL}/api/v1/rbac/permissions?${query.toString()}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (!res.ok) throw new Error("Failed to fetch permissions");
             const data = await res.json();
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async getAllPermissions() {
+        try {
+            const { token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/api/v1/rbac/permissions/all`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Failed to fetch permissions");
             return { success: true, data };
         } catch (e) {
             return { success: false, error: e.message };

@@ -107,63 +107,29 @@
                     <p class="text-gray-500">No permissions created yet</p>
                 </div>
 
-                <div v-else class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Permission Name
-                                </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Description
-                                </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Used in Roles
-                                </th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="perm in permissions" :key="perm.id">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="font-medium text-gray-900">{{
-                                        perm.name
-                                    }}</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-gray-600">{{
-                                        perm.description
-                                    }}</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-gray-600">
-                                        {{
-                                            getRolesWithPermission(perm.id)
-                                                .length
-                                        }}
-                                        role(s)
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                                    <button @click="editPermission(perm)"
-                                        class="text-primary-600 hover:text-primary-700">
-                                        Edit
-                                    </button>
-                                    <button @click="deletePermission(perm.id)"
-                                        class="text-danger-600 hover:text-danger-700">
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <PaginatedTable v-else :columns="permissionColumns" :rows="permissions" :total="permissionTotal"
+                    :page="permissionPage" :page-size="permissionPageSize" :total-pages="permissionTotalPages"
+                    :sort-by="permissionSortBy" :sort-order="permissionSortOrder" :loading="loading"
+                    empty-message="No permissions created yet" @sort="togglePermissionSort"
+                    @page-change="changePermissionPage">
+                    <template #cell-name="{ row }">
+                        <span class="font-medium text-gray-900">{{ row.name }}</span>
+                    </template>
+                    <template #cell-description="{ row }">
+                        <span class="text-gray-600">{{ row.description || '—' }}</span>
+                    </template>
+                    <template #cell-usedInRoles="{ row }">
+                        <span class="text-gray-600">{{ getRolesWithPermission(row.id).length }} role(s)</span>
+                    </template>
+                    <template #cell-actions="{ row }">
+                        <div class="whitespace-nowrap text-sm space-x-2">
+                            <button @click="editPermission(row)"
+                                class="text-primary-600 hover:text-primary-700">Edit</button>
+                            <button @click="deletePermission(row.id)"
+                                class="text-danger-600 hover:text-danger-700">Delete</button>
+                        </div>
+                    </template>
+                </PaginatedTable>
             </div>
 
             <!-- ROLE ASSIGNMENTS TAB -->
@@ -179,7 +145,7 @@
                         </h3>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                            <label v-for="perm in permissions" :key="perm.id"
+                            <label v-for="perm in assignmentPermissions" :key="perm.id"
                                 class="flex items-center space-x-2 cursor-pointer">
                                 <input type="checkbox" :checked="roleHasPermission(role.id, perm.id)
                                     " @change="
@@ -191,7 +157,7 @@
                                         " class="w-4 h-4 text-primary-600 rounded" />
                                 <span class="text-sm text-gray-700">{{
                                     perm.name
-                                }}</span>
+                                    }}</span>
                             </label>
                         </div>
                     </div>
@@ -236,7 +202,7 @@
                                 Permissions
                             </label>
                             <div class="space-y-2 max-h-40 overflow-y-auto">
-                                <label v-for="perm in permissions" :key="perm.id"
+                                <label v-for="perm in assignmentPermissions" :key="perm.id"
                                     class="flex items-center space-x-2 cursor-pointer">
                                     <input type="checkbox" :checked="roleHasPermission(
                                         editingRole.id,
@@ -251,7 +217,7 @@
                                             " class="w-4 h-4 text-primary-600 rounded" />
                                     <span class="text-sm text-gray-700">{{
                                         perm.name
-                                    }}</span>
+                                        }}</span>
                                 </label>
                             </div>
                         </div>
@@ -332,6 +298,7 @@
 import { ref, computed, onMounted } from "vue";
 import { api } from "../services/api";
 import Breadcrumbs from "../components/Breadcrumbs.vue";
+import PaginatedTable from "../components/PaginatedTable.vue";
 
 const breadcrumbItems = [
     { label: "Home", to: "/", icon: true },
@@ -342,6 +309,7 @@ const breadcrumbItems = [
 const activeTab = ref("roles");
 const roles = ref([]);
 const permissions = ref([]);
+const assignmentPermissions = ref([]);
 const rolePermissions = ref([]); // Array of { role_id, permission_id }
 
 const showRoleModal = ref(false);
@@ -354,6 +322,19 @@ const newPermission = ref({ name: "", description: "" });
 
 const notification = ref(null);
 const loading = ref(false);
+const permissionPage = ref(1);
+const permissionPageSize = ref(10);
+const permissionTotal = ref(0);
+const permissionTotalPages = ref(1);
+const permissionSortBy = ref("name");
+const permissionSortOrder = ref("asc");
+
+const permissionColumns = [
+    { key: "name", label: "Permission Name", sortable: true },
+    { key: "description", label: "Description", sortable: true },
+    { key: "usedInRoles", label: "Used in Roles" },
+    { key: "actions", label: "Actions" },
+];
 
 // Fetch data on mount
 onMounted(async () => {
@@ -380,12 +361,21 @@ const loadRoles = async () => {
 const loadPermissions = async () => {
     loading.value = true;
     try {
-        const [permissionsResponse, mappingsResponse] = await Promise.all([
-            api.getPermissions(),
+        const [permissionsResponse, allPermissionsResponse, mappingsResponse] = await Promise.all([
+            api.getPermissions({
+                page: permissionPage.value,
+                page_size: permissionPageSize.value,
+                sort_by: permissionSortBy.value,
+                sort_order: permissionSortOrder.value,
+            }),
+            api.getAllPermissions(),
             api.getRolePermissions(),
         ]);
         if (permissionsResponse.success && mappingsResponse.success) {
-            permissions.value = permissionsResponse.data;
+            permissions.value = permissionsResponse.data.items;
+            assignmentPermissions.value = allPermissionsResponse.data;
+            permissionTotal.value = permissionsResponse.data.total;
+            permissionTotalPages.value = permissionsResponse.data.totalPages;
             rolePermissions.value = mappingsResponse.data;
         } else {
             showNotification("Failed to load permissions or role assignments", "error");
@@ -395,6 +385,23 @@ const loadPermissions = async () => {
     } finally {
         loading.value = false;
     }
+};
+
+const changePermissionPage = async (page) => {
+    if (page < 1 || page > permissionTotalPages.value) return;
+    permissionPage.value = page;
+    await loadPermissions();
+};
+
+const togglePermissionSort = async (field) => {
+    if (permissionSortBy.value === field) {
+        permissionSortOrder.value = permissionSortOrder.value === "asc" ? "desc" : "asc";
+    } else {
+        permissionSortBy.value = field;
+        permissionSortOrder.value = "asc";
+    }
+    permissionPage.value = 1;
+    await loadPermissions();
 };
 
 const saveRole = async () => {
@@ -512,6 +519,9 @@ const deletePermission = async (permId) => {
         const response = await api.deletePermission(permId);
         if (response.success) {
             showNotification("Permission deleted successfully", "success");
+            if (permissions.value.length === 1 && permissionPage.value > 1) {
+                permissionPage.value -= 1;
+            }
             await loadPermissions();
         } else {
             showNotification("Failed to delete permission", "error");
@@ -571,7 +581,7 @@ const getRolePermissions = (roleId) => {
     const permIds = rolePermissions.value
         .filter((rp) => rp.role_id === roleId)
         .map((rp) => rp.permission_id);
-    return permissions.value.filter((p) => permIds.includes(p.id));
+    return assignmentPermissions.value.filter((p) => permIds.includes(p.id));
 };
 
 const getRolesWithPermission = (permId) => {
