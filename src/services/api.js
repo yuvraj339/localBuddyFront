@@ -2,7 +2,6 @@
     mockHelpers,
     mockChats,
     mockHelperProfile,
-    mockStats,
 } from "./mockData";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -660,11 +659,102 @@ export const api = {
     },
 
     async getStats() {
-        await delay(500);
-        return {
-            success: true,
-            data: mockStats,
-        };
+        try {
+            const { token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/admin/analytics`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || "Failed to fetch dashboard statistics");
+            }
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async getAdminVerifications() {
+        try {
+            const { token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/admin/verifications`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Failed to fetch pending verifications");
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async reviewVerification(userId, decision) {
+        try {
+            const { token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/admin/verifications/${userId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ decision }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Failed to review verification");
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async getAdminUsers(params = {}) {
+        try {
+            const { token } = isTokenExpired();
+            const query = new URLSearchParams(
+                Object.entries(params).filter(([, value]) => value !== "" && value != null),
+            );
+            const res = await fetch(`${BASE_URL}/admin/users?${query.toString()}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Failed to fetch users");
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async updateAdminUserStatus(userId, isActive) {
+        try {
+            const { token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/admin/users/${userId}/status`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ is_active: isActive }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Failed to update user status");
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async getAdminDisputes() {
+        try {
+            const { token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/admin/disputes`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Failed to fetch disputes");
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
     },
 
     async verifyDocument(documentData) {
@@ -895,7 +985,21 @@ export const api = {
             });
             if (!res.ok) throw new Error("Failed to fetch permissions");
             const data = await res.json();
-            return { success: true, data, rolePermissions: [] };
+            return { success: true, data };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
+    },
+
+    async getRolePermissions() {
+        try {
+            const { token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/api/v1/rbac/role_permissions`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Failed to fetch role permissions");
+            return { success: true, data };
         } catch (e) {
             return { success: false, error: e.message };
         }
@@ -991,7 +1095,7 @@ export const api = {
         try {
             const { payload, token } = isTokenExpired();
             const res = await fetch(
-                `${BASE_URL}/api/v1/revoke_permission/${roleId}/${permissionId}`,
+                `${BASE_URL}/api/v1/rbac/revoke_permission/${roleId}/${permissionId}`,
                 {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${token}` },

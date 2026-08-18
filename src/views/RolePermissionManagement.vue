@@ -380,13 +380,15 @@ const loadRoles = async () => {
 const loadPermissions = async () => {
     loading.value = true;
     try {
-        const response = await api.getPermissions();
-        if (response.success) {
-            permissions.value = response.data;
-            // Also load role-permission mappings
-            rolePermissions.value = response.rolePermissions || [];
+        const [permissionsResponse, mappingsResponse] = await Promise.all([
+            api.getPermissions(),
+            api.getRolePermissions(),
+        ]);
+        if (permissionsResponse.success && mappingsResponse.success) {
+            permissions.value = permissionsResponse.data;
+            rolePermissions.value = mappingsResponse.data;
         } else {
-            showNotification("Failed to load permissions", "error");
+            showNotification("Failed to load permissions or role assignments", "error");
         }
     } catch (error) {
         showNotification(error.message, "error");
@@ -540,6 +542,9 @@ const toggleRolePermission = async (roleId, permId, event) => {
                     permission_id: permId,
                 });
                 showNotification("Permission assigned", "success");
+            } else {
+                event.target.checked = false;
+                showNotification(response.error || "Failed to assign permission", "error");
             }
         } else {
             const response = await api.removePermissionFromRole(roleId, permId);
@@ -549,6 +554,9 @@ const toggleRolePermission = async (roleId, permId, event) => {
                         !(rp.role_id === roleId && rp.permission_id === permId),
                 );
                 showNotification("Permission removed", "success");
+            } else {
+                event.target.checked = true;
+                showNotification(response.error || "Failed to remove permission", "error");
             }
         }
     } catch (error) {
