@@ -6,14 +6,14 @@
                 <Breadcrumbs :items="breadcrumbItems" />
                 <button @click="categoryStore.openCreateModal"
                     class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                    + Add Category
+                    + {{ t("categories.add") }}
                 </button>
             </div>
 
             <!-- Loading State -->
             <div v-if="categoryStore.loading" class="text-center py-8">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <p class="mt-4 text-gray-600">Loading categories...</p>
+                <p class="mt-4 text-gray-600">{{ t("categories.loading") }}</p>
             </div>
 
             <!-- Error State -->
@@ -32,11 +32,8 @@
                             <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">
                                 Icon
                             </th>
-                            <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                                Name
-                            </th>
-                            <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                                Description
+                            <th v-for="language in supportedLanguages" :key="language.code" class="px-6 py-3 text-left text-sm font-medium text-gray-700">
+                                {{ t("categories.languageName", { language: language.nativeLabel }) }}
                             </th>
                             <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">
                                 Helpers
@@ -51,11 +48,8 @@
                             <td class="px-6 py-4 text-2xl">
                                 {{ category.icon || "🏷️" }}
                             </td>
-                            <td class="px-6 py-4 font-medium text-gray-900">
-                                {{ category.name }}
-                            </td>
-                            <td class="px-6 py-4 text-gray-600 text-sm">
-                                {{ category.description || "-" }}
+                            <td v-for="language in supportedLanguages" :key="language.code" class="px-6 py-4 font-medium text-gray-900">
+                                {{ category.name_translations?.[language.code] || "—" }}
                             </td>
                             <td class="px-6 py-4 text-gray-600">
                                 {{ category.helper_count }}
@@ -84,10 +78,10 @@
                 !categoryStore.loading &&
                 categoryStore.getCategories.length === 0
             " class="bg-white shadow rounded-lg p-8 text-center">
-                <p class="text-gray-500 text-lg">No categories found</p>
+                <p class="text-gray-500 text-lg">{{ t("categories.noCategories") }}</p>
                 <button @click="categoryStore.openCreateModal"
                     class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                    Create your first category
+                    {{ t("categories.createFirst") }}
                 </button>
             </div>
         </div>
@@ -99,15 +93,15 @@
                 <h2 class="text-2xl font-bold mb-4">
                     {{
                         categoryStore.editingCategory
-                            ? "Edit Category"
-                            : "Create Category"
+                            ? t("categories.update")
+                            : t("categories.create")
                     }}
                 </h2>
 
                 <form @submit.prevent="categoryStore.saveCategory()" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Category Name</label>
-                        <input v-model="categoryStore.formData.value.name" type="text" placeholder="e.g., Elder Care"
+                    <div v-for="language in supportedLanguages" :key="language.code">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ t("categories.languageName", { language: language.nativeLabel }) }}</label>
+                        <input v-model="categoryStore.formData.value.name_translations[language.code]" type="text" :required="language.code === 'en'"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             required />
                     </div>
@@ -120,24 +114,24 @@
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                        <textarea v-model="categoryStore.formData.value.description"
-                            placeholder="Short description of the category" rows="3"
+                    <div v-for="language in supportedLanguages" :key="`${language.code}-description`">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ t("categories.languageDescription", { language: language.nativeLabel }) }}</label>
+                        <textarea v-model="categoryStore.formData.value.description_translations[language.code]"
+                            rows="3"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                     </div>
 
                     <div class="flex gap-3 mt-6">
                         <button type="button" @click="categoryStore.closeModal"
                             class="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
-                            Cancel
+                            {{ t("categories.cancel") }}
                         </button>
                         <button type="submit" :disabled="categoryStore.isSubmitting"
                             class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition">
                             {{
                                 categoryStore.isSubmitting
                                     ? "Saving..."
-                                    : "Save"
+                                    : t("categories.save")
                             }}
                         </button>
                     </div>
@@ -148,10 +142,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { onMounted } from "vue";
 import { useCategoryStore } from "../stores/categories";
 import Breadcrumbs from "../components/Breadcrumbs.vue";
+import { supportedLanguages, useI18n } from "../i18n";
 const categoryStore = useCategoryStore();
+const { t } = useI18n();
 
 onMounted(() => {
     categoryStore.fetchCategories();

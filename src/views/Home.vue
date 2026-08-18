@@ -6,26 +6,25 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
                     <h1 class="text-5xl font-bold mb-6">
-                        Find Trusted Help<br />
-                        For Every Moment
+                        {{ t("home.heroTitle").split("\n")[0] }}<br />
+                        {{ t("home.heroTitle").split("\n")[1] }}
                     </h1>
                     <p class="text-xl mb-8 text-blue-50">
-                        Connect with verified helpers for events, errands, elder
-                        care, and more
+                        {{ t("home.heroSubtitle") }}
                     </p>
                     <div class="flex justify-center space-x-4">
                         <router-link
                             to="/helpers"
                             class="btn bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg"
                         >
-                            Find Helpers
+                            {{ t("nav.findHelpers") }}
                         </router-link>
                         <router-link
                             v-if="!authStore.isAuthenticated"
                             to="/register"
                             class="btn bg-blue-700 text-white hover:bg-blue-800 px-8 py-3 text-lg"
                         >
-                            Become a Helper
+                            {{ t("home.becomeHelper") }}
                         </router-link>
                     </div>
                 </div>
@@ -35,7 +34,7 @@
         <section class="py-16 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">
-                    Popular Categories
+                    {{ t("home.popularCategories") }}
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div
@@ -49,13 +48,13 @@
                             <h3
                                 class="text-xl font-semibold mb-2 text-gray-800"
                             >
-                                {{ category.name }}
+                                {{ categoryText(category).name }}
                             </h3>
                             <p class="text-gray-600 mb-4">
-                                {{ category.description }}
+                                {{ categoryText(category).description }}
                             </p>
                             <p class="text-sm text-primary-600 font-medium">
-                                {{ category.helperCount }} helpers available
+                                {{ t("home.helpersAvailable", { count: category.helper_count || 0 }) }}
                             </p>
                         </div>
                     </div>
@@ -66,10 +65,10 @@
         <section class="py-16 bg-gray-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">
-                    Top Rated Helpers
+                    {{ t("home.topRated") }}
                 </h2>
                 <p class="text-center text-gray-600 mb-12">
-                    Verified professionals trusted by thousands
+                    {{ t("home.trusted") }}
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div
@@ -147,7 +146,7 @@
         <section class="py-16 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">
-                    Why Choose TimeBuddy?
+                    {{ t("home.whyChoose") }}
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div class="text-center">
@@ -194,15 +193,15 @@
             class="py-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
         >
             <div class="max-w-4xl mx-auto px-4 text-center">
-                <h2 class="text-4xl font-bold mb-6">Ready to Get Started?</h2>
+                <h2 class="text-4xl font-bold mb-6">{{ t("home.ready") }}</h2>
                 <p class="text-xl mb-8 text-blue-50">
-                    Join thousands of satisfied customers and helpers
+                    {{ t("home.join") }}
                 </p>
                 <router-link
                     to="/register"
                     class="btn bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg"
                 >
-                    Sign Up Now
+                    {{ t("home.signUpNow") }}
                 </router-link>
             </div>
         </section>
@@ -216,12 +215,15 @@ import { useAuthStore } from "../stores/auth";
 import { useHelperStore } from "../stores/helper";
 import { helperAvatarSrc } from "../utils/util";
 import { useCategoryStore } from "../stores/categories";
+import { localizeCategory, useI18n } from "../i18n";
 
 const categoryStore = useCategoryStore();
 
 const router = useRouter();
 const authStore = useAuthStore();
 const helperStore = useHelperStore();
+const { t } = useI18n();
+const categoryText = localizeCategory;
 
 onMounted(() => {
     categoryStore.fetchCategories();

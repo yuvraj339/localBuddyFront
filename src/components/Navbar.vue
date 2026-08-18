@@ -10,13 +10,13 @@
                     <div v-if="authStore.isAuthenticated" class="hidden md:flex space-x-4">
                         <router-link v-if="authStore.hasRole('customer')" to="/helpers" class="nav-link"
                             active-class="nav-link-active">
-                            Find Helpers
+                            {{ t("nav.findHelpers") }}
                         </router-link>
                         <router-link to="/bookings" class="nav-link" active-class="nav-link-active">
-                            Bookings
+                            {{ t("nav.bookings") }}
                         </router-link>
                         <router-link to="/chat" class="nav-link relative" active-class="nav-link-active">
-                            Messages
+                            {{ t("nav.messages") }}
                             <span v-if="unreadCount > 0"
                                 class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                                 {{ unreadCount }}
@@ -24,25 +24,31 @@
                         </router-link>
                         <router-link v-if="authStore.hasRole('helper')" to="/helper-dashboard"
                             class="nav-link relative">
-                            Dashboard
+                            {{ t("nav.dashboard") }}
                         </router-link>
                         <router-link v-else-if="authStore.hasRole('customer')" to="/dashboard"
                             class="nav-link relative">
-                            Dashboard
+                            {{ t("nav.dashboard") }}
                         </router-link>
                         <router-link v-else-if="authStore.hasRole('super_admin')" to="/admin" class="nav-link relative">
-                            Dashboard
+                            {{ t("nav.dashboard") }}
                         </router-link>
                     </div>
                 </div>
 
                 <div class="flex items-center space-x-4">
+                    <select :value="locale" @change="setLocale($event.target.value)" :aria-label="t('nav.language')"
+                        class="border border-gray-300 rounded-lg px-2 py-1 text-sm text-gray-700 bg-white">
+                        <option v-for="language in supportedLanguages" :key="language.code" :value="language.code">
+                            {{ language.nativeLabel }}
+                        </option>
+                    </select>
                     <template v-if="!authStore.isAuthenticated">
                         <router-link to="/login" class="btn btn-secondary text-sm">
-                            Login
+                            {{ t("nav.login") }}
                         </router-link>
                         <router-link to="/register" class="btn btn-primary text-sm">
-                            Sign Up
+                            {{ t("nav.signUp") }}
                         </router-link>
                     </template>
 
@@ -59,11 +65,11 @@
                                 class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 border border-gray-200">
                                 <router-link to="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                                     @click="showDropdown = false">
-                                    My Profile
+                                    {{ t("nav.myProfile") }}
                                 </router-link>
                                 <button @click="handleLogout"
                                     class="w-full text-left px-4 py-2 text-danger-600 hover:bg-gray-100">
-                                    Logout
+                                    {{ t("nav.logout") }}
                                 </button>
                             </div>
                         </div>
@@ -79,8 +85,10 @@ import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import { avatarSrc } from "../utils/util";
+import { useI18n } from "../i18n";
 const router = useRouter();
 const authStore = useAuthStore();
+const { locale, setLocale, supportedLanguages, t } = useI18n();
 
 const showDropdown = ref(false);
 const unreadCount = ref(0);

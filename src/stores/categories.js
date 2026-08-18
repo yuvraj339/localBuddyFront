@@ -15,6 +15,8 @@ export const useCategoryStore = defineStore("categories", {
             name: "",
             icon: "",
             description: "",
+            name_translations: { en: "", hi: "" },
+            description_translations: { en: "", hi: "" },
         }),
     }),
 
@@ -29,6 +31,8 @@ export const useCategoryStore = defineStore("categories", {
                 name: "",
                 icon: "",
                 description: "",
+                name_translations: { en: "", hi: "" },
+                description_translations: { en: "", hi: "" },
             };
             this.showModal = true;
         },
@@ -38,6 +42,8 @@ export const useCategoryStore = defineStore("categories", {
                 name: category.name,
                 icon: category.icon || "",
                 description: category.description || "",
+                name_translations: { en: category.name, hi: "", ...(category.name_translations || {}) },
+                description_translations: { en: category.description || "", hi: "", ...(category.description_translations || {}) },
             };
             this.showModal = true;
         },
@@ -48,15 +54,11 @@ export const useCategoryStore = defineStore("categories", {
                 name: "",
                 icon: "",
                 description: "",
+                name_translations: { en: "", hi: "" },
+                description_translations: { en: "", hi: "" },
             };
         },
         async fetchCategories() {
-            let categories = JSON.parse(localStorage.getItem("categories"));
-
-            if (categories && categories.length) {
-                this.categories = categories;
-                return;
-            }
             try {
                 this.loading = true;
                 this.error = null;
@@ -64,10 +66,6 @@ export const useCategoryStore = defineStore("categories", {
 
                 if (response.success) {
                     this.categories = response.data;
-                    localStorage.setItem(
-                        "categories",
-                        JSON.stringify(this.categories)
-                    );
                 } else {
                     this.error = response.error || "Failed to load categories";
                 }
@@ -91,6 +89,11 @@ export const useCategoryStore = defineStore("categories", {
                 };
 
                 let response;
+                const payload = {
+                    ...this.formData.value,
+                    name: this.formData.value.name_translations.en.trim(),
+                    description: this.formData.value.description_translations.en.trim() || null,
+                };
                 if (this.editingCategory) {
                     // Update existing category
                     response = await fetch(
@@ -101,7 +104,7 @@ export const useCategoryStore = defineStore("categories", {
                         {
                             method: "PUT",
                             headers,
-                            body: JSON.stringify(this.formData.value),
+                            body: JSON.stringify(payload),
                         }
                     );
                 } else {
@@ -114,15 +117,14 @@ export const useCategoryStore = defineStore("categories", {
                         {
                             method: "POST",
                             headers,
-                            body: JSON.stringify(this.formData.value),
+                            body: JSON.stringify(payload),
                         }
                     );
                 }
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    // throw new Error(errorData.detail || "Failed to save category");
-                    this.error = errorData.detail || "Failed to save category";
+                    throw new Error(errorData.detail || "Failed to save category");
                 }
 
                 this.closeModal();
