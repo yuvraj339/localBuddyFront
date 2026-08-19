@@ -84,7 +84,7 @@
                                 <span class="text-yellow-400 mr-1">★</span>
                                 <span class="font-medium text-gray-800">{{
                                     helper.rating
-                                }}</span>
+                                    }}</span>
                                 <span class="text-gray-500 text-sm ml-1">({{ helper.reviewCount }})</span>
                             </div>
                             <p class="text-center text-gray-600 text-sm mb-4" v-if="helper.bio">
@@ -120,7 +120,7 @@
                     <div class="text-center">
                         <div class="text-4xl mb-4">💰</div>
                         <h3 class="text-xl font-semibold mb-2 text-gray-800">
-                            {{ t("home.securePayments") }}
+                            {{ t("home.securePayment") }}
                         </h3>
                         <p class="text-gray-600">
                             {{ t("home.securePaymentsDes") }}

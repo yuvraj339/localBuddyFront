@@ -5,39 +5,23 @@
                 <div class="text-lg text-gray-600">Loading...</div>
             </div>
 
-            <div
-                v-else-if="helper"
-                class="grid grid-cols-1 lg:grid-cols-3 gap-8"
-            >
+            <div v-else-if="helper" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-2 space-y-6">
                     <div class="card">
                         <div class="flex items-start space-x-6">
-                            <img
-                                :src="helperAvatarSrc(helper.avatar)"
-                                :alt="helper.name"
-                                class="w-32 h-32 rounded-full object-cover border-4 border-primary-100"
-                            />
+                            <img :src="helperAvatarSrc(helper.avatar)" :alt="helper.name"
+                                class="w-32 h-32 rounded-full object-cover border-4 border-primary-100" />
                             <div class="flex-1">
                                 <div class="flex items-center mb-2">
-                                    <h1
-                                        class="text-3xl font-bold text-gray-900"
-                                    >
+                                    <h1 class="text-3xl font-bold text-gray-900">
                                         {{ helper.name }}
                                     </h1>
-                                    <span
-                                        v-if="helper.verified"
-                                        class="ml-3 text-blue-500 text-2xl"
-                                        title="Verified"
-                                    >
+                                    <span v-if="helper.verified" class="ml-3 text-blue-500 text-2xl" title="Verified">
                                         ✓
                                     </span>
                                 </div>
-                                <div
-                                    class="flex items-center text-gray-600 mb-4"
-                                >
-                                    <span class="text-yellow-400 text-xl mr-2"
-                                        >★</span
-                                    >
+                                <div class="flex items-center text-gray-600 mb-4">
+                                    <span class="text-yellow-400 text-xl mr-2">★</span>
                                     <span class="font-semibold text-lg">{{
                                         reviewStore.averageRating ?? "N/A"
                                     }}</span>
@@ -46,20 +30,14 @@
                                         reviews)
                                     </span>
                                     <span class="mx-3">•</span>
-                                    <span
-                                        >{{ helper.completedJobs }} jobs
-                                        completed</span
-                                    >
+                                    <span>{{ helper.completedJobs }} jobs
+                                        completed</span>
                                 </div>
 
-                                <div
-                                    class="flex items-center space-x-4 text-sm text-gray-600"
-                                >
+                                <div class="flex items-center space-x-4 text-sm text-gray-600">
                                     <span>📍 {{ helper.location }}</span>
-                                    <span
-                                        >⚡ Responds in
-                                        {{ helper.responseTime }}</span
-                                    >
+                                    <span>⚡ Responds in
+                                        {{ helper.responseTime }}</span>
                                 </div>
                             </div>
                         </div>
@@ -68,41 +46,25 @@
                         <h2 class="text-xl font-semibold mb-4 text-gray-900">
                             Reviews
                         </h2>
-                        <div
-                            v-if="
-                                reviewStore.reviews &&
-                                reviewStore.reviews.length > 0
-                            "
-                        >
-                            <div
-                                v-for="review in reviewStore.reviews"
-                                :key="review.id"
-                                class="mb-4 border-b pb-3"
-                            >
-                                <div
-                                    class="items-center mb-1 flex justify-between"
-                                >
+                        <div v-if="
+                            reviewStore.reviews &&
+                            reviewStore.reviews.length > 0
+                        ">
+                            <div v-for="review in reviewStore.reviews" :key="review.id" class="mb-4 border-b pb-3">
+                                <div class="items-center mb-1 flex justify-between">
                                     <div>
-                                        <span
-                                            class="mr-1"
-                                            :class="[
-                                                review.rating < 3
-                                                    ? 'text-red-500'
-                                                    : 'text-green-500',
-                                            ]"
-                                            v-for="value in review.rating"
-                                            >★</span
-                                        >
+                                        <span class="mr-1" :class="[
+                                            review.rating < 3
+                                                ? 'text-red-500'
+                                                : 'text-green-500',
+                                        ]" v-for="value in review.rating">★</span>
                                     </div>
                                     <!-- <span class="font-semibold"></span> -->
-                                    <span
-                                        class="ml-2 text-gray-500 text-xs float-end"
-                                        >{{
-                                            new Date(
-                                                review.created_at
-                                            ).toLocaleDateString()
-                                        }}</span
-                                    >
+                                    <span class="ml-2 text-gray-500 text-xs float-end">{{
+                                        new Date(
+                                            review.created_at
+                                        ).toLocaleDateString()
+                                    }}</span>
                                 </div>
                                 <div class="text-gray-800 capitalize">
                                     {{ review.review }}
@@ -129,11 +91,7 @@
                             Services
                         </h2>
                         <div class="flex flex-wrap gap-2">
-                            <span
-                                v-for="category in helper.categories"
-                                :key="category"
-                                class="badge badge-primary"
-                            >
+                            <span v-for="category in helper.categories" :key="category" class="badge badge-primary">
                                 {{ category }}
                             </span>
                         </div>
@@ -144,11 +102,7 @@
                             Skills
                         </h2>
                         <div class="flex flex-wrap gap-2">
-                            <span
-                                v-for="skill in helper.skills"
-                                :key="skill"
-                                class="badge bg-gray-100 text-gray-700"
-                            >
+                            <span v-for="skill in helper.skills" :key="skill" class="badge bg-gray-100 text-gray-700">
                                 {{ skill }}
                             </span>
                         </div>
@@ -159,16 +113,12 @@
                             Availability
                         </h2>
                         <div class="grid grid-cols-7 gap-2">
-                            <div
-                                v-for="day in daysOfWeek"
-                                :key="day"
-                                :class="[
-                                    'text-center p-3 rounded-lg border-2',
-                                    helper.availability.includes(day)
-                                        ? 'bg-success-50 border-success-500 text-success-700'
-                                        : 'bg-gray-50 border-gray-200 text-gray-400',
-                                ]"
-                            >
+                            <div v-for="day in daysOfWeek" :key="day" :class="[
+                                'text-center p-3 rounded-lg border-2',
+                                helper.availability.includes(day)
+                                    ? 'bg-success-50 border-success-500 text-success-700'
+                                    : 'bg-gray-50 border-gray-200 text-gray-400',
+                            ]">
                                 <div class="text-xs font-medium">
                                     {{ day.substring(0, 3) }}
                                 </div>
@@ -180,9 +130,7 @@
                 <div class="lg:col-span-1">
                     <div class="card sticky top-20">
                         <div class="text-center mb-6">
-                            <div
-                                class="text-4xl font-bold text-primary-600 mb-2"
-                            >
+                            <div class="text-4xl font-bold text-primary-600 mb-2">
                                 ₹{{ helper.hourlyRate }}
                             </div>
                             <div class="text-gray-600">per hour</div>
@@ -190,114 +138,62 @@
 
                         <form @submit.prevent="handleBooking" class="space-y-4">
                             <div>
-                                <label
-                                    class="block text-sm font-medium text-gray-700 mb-2"
-                                    for="date"
-                                >
+                                <label class="block text-sm font-medium text-gray-700 mb-2" for="date">
                                     Date <span class="text-red-500">*</span>
-                                    <VueDatePicker
-                                        required
-                                        auto-apply
-                                        v-model="bookingForm.date"
-                                        :min-date="new Date()"
-                                        :disabled-dates="
-                                            disableUnavailableDates
-                                        "
-                                        :formats="{
-                                            input: 'yyyy-MM-dd',
-                                            preview: 'yyyy-MM-dd',
-                                        }"
-                                        timezone="utc"
-                                    />
+                                    <VueDatePicker required auto-apply v-model="bookingForm.date" :min-date="new Date()"
+                                        :disabled-dates="disableUnavailableDates
+                                            " :formats="{
+                                                input: 'yyyy-MM-dd',
+                                                preview: 'yyyy-MM-dd',
+                                            }" timezone="utc" />
                                 </label>
-                                <span class="text-red-500" v-if="error.dateErr"
-                                    >Date is required</span
-                                >
+                                <span class="text-red-500" v-if="error.dateErr">Date is required</span>
                             </div>
 
                             <div>
-                                <label
-                                    class="block text-sm font-medium text-gray-700 mb-2"
-                                >
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Start Time
                                     <span class="text-red-500">*</span>
                                 </label>
-                                <VueDatePicker
-                                    required
-                                    v-model="bookingForm.startTime"
-                                    time-picker
-                                    :disabled-times="bookedSlots"
-                                />
-                                <span
-                                    class="text-red-500"
-                                    v-if="error.startTimeErr"
-                                    >Start time is required</span
-                                >
+                                <VueDatePicker required v-model="bookingForm.startTime" time-picker
+                                    :disabled-times="bookedSlots" />
+                                <span class="text-red-500" v-if="error.startTimeErr">Start time is required</span>
                             </div>
 
                             <div>
-                                <label
-                                    class="block text-sm font-medium text-gray-700 mb-2"
-                                >
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Duration (hours)
                                 </label>
-                                <input
-                                    v-model.number="bookingForm.hours"
-                                    type="number"
-                                    min="1"
-                                    required
-                                    class="input"
-                                />
+                                <input v-model.number="bookingForm.hours" type="number" min="1" required
+                                    class="input" />
                             </div>
 
                             <div>
-                                <label
-                                    class="block text-sm font-medium text-gray-700 mb-2"
-                                >
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Category <span class="text-red-500">*</span>
                                 </label>
-                                <select
-                                    v-model="bookingForm.category"
-                                    required
-                                    class="input"
-                                >
+                                <select v-model="bookingForm.category" required class="input">
                                     <option value="">Select a service</option>
-                                    <option
-                                        v-for="category in helper.categories"
-                                        :key="category"
-                                        :value="category"
-                                    >
+                                    <option v-for="category in helper.categories" :key="category" :value="category">
                                         {{ category }}
                                     </option>
                                 </select>
                             </div>
 
                             <div>
-                                <label
-                                    class="block text-sm font-medium text-gray-700 mb-2"
-                                >
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Description
                                 </label>
-                                <textarea
-                                    v-model="bookingForm.description"
-                                    rows="3"
-                                    class="input"
-                                    placeholder="Describe your requirements..."
-                                ></textarea>
+                                <textarea v-model="bookingForm.description" rows="3" class="input"
+                                    placeholder="Describe your requirements..."></textarea>
                             </div>
 
                             <div>
-                                <label
-                                    class="block text-sm font-medium text-gray-700 mb-2"
-                                >
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Payment Method
                                     <span class="text-red-500">*</span>
                                 </label>
-                                <select
-                                    v-model="bookingForm.paymentMethod"
-                                    required
-                                    class="input"
-                                >
+                                <select v-model="bookingForm.paymentMethod" required class="input">
                                     <option value="">
                                         Select a payment method
                                     </option>
@@ -311,9 +207,7 @@
                             <div class="border-t pt-4">
                                 <div class="flex justify-between mb-2">
                                     <span class="text-gray-600">Rate:</span>
-                                    <span class="font-medium"
-                                        >₹{{ helper.hourlyRate }}/hour</span
-                                    >
+                                    <span class="font-medium">₹{{ helper.hourlyRate }}/hour</span>
                                 </div>
                                 <div class="flex justify-between mb-2">
                                     <span class="text-gray-600">Hours:</span>
@@ -321,29 +215,19 @@
                                         bookingForm.hours
                                     }}</span>
                                 </div>
-                                <div
-                                    class="flex justify-between text-lg font-bold"
-                                >
+                                <div class="flex justify-between text-lg font-bold">
                                     <span>Total:</span>
-                                    <span class="text-primary-600"
-                                        >₹{{ totalAmount }}</span
-                                    >
+                                    <span class="text-primary-600">₹{{ totalAmount }}</span>
                                 </div>
                             </div>
                             <div v-if="!helper.isAvailable">
-                                <button
-                                    type="button"
-                                    class="btn btn-secondary w-full cursor-not-allowed"
-                                >
+                                <button type="button" class="btn btn-secondary w-full cursor-not-allowed">
                                     Not Available
                                 </button>
                             </div>
                             <div v-else>
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary w-full py-3 mb-3"
-                                    :disabled="!authStore.isAuthenticated"
-                                >
+                                <button :type="authStore.isAuthenticated ? 'submit' : 'button'" @click="handleBookClick"
+                                    class="btn btn-primary w-full py-3 mb-3">
                                     {{
                                         authStore.isAuthenticated
                                             ? "Book Now"
@@ -351,16 +235,11 @@
                                     }}
                                 </button>
 
-                                <button
-                                    v-if="authStore.isAuthenticated"
-                                    type="button"
-                                    @click="
-                                        $router.push(
-                                            `/chat?helper=${helper.id}`
-                                        )
-                                    "
-                                    class="btn btn-secondary w-full"
-                                >
+                                <button v-if="authStore.isAuthenticated" type="button" @click="
+                                    $router.push(
+                                        `/chat?helper=${helper.id}`
+                                    )
+                                    " class="btn btn-secondary w-full">
                                     Message Helper
                                 </button>
                             </div>
@@ -388,6 +267,16 @@ import { helperAvatarSrc } from "../utils/util";
 
 const route = useRoute();
 const router = useRouter();
+
+const handleBookClick = () => {
+    if (!authStore.isAuthenticated) {
+        router.push({
+            path: "/login",
+            query: { redirect: route.fullPath },
+        });
+    }
+    // if authenticated, type="submit" lets the form submit normally
+};
 const helperStore = useHelperStore();
 const bookingStore = useBookingStore();
 const authStore = useAuthStore();
@@ -572,8 +461,7 @@ const handleBooking = async () => {
 const calculateEndTime = () => {
     // const [hours, minutes] = bookingForm.startTime.split(":");
     const endHour = parseInt(bookingForm.startTime.hours) + bookingForm.hours;
-    return `${endHour.toString().padStart(2, "0")}:${
-        bookingForm.startTime.minutes
-    }`;
+    return `${endHour.toString().padStart(2, "0")}:${bookingForm.startTime.minutes
+        }`;
 };
 </script>

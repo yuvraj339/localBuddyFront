@@ -48,6 +48,7 @@ export const useHelperStore = defineStore("helper", {
             this.loading = true;
             this.error = null;
             try {
+                debugger
                 const response = await api.getHelpers(this.filters);
                 if (response.success) {
                     // Fetch reviews for each helper and compute rating/reviewCount

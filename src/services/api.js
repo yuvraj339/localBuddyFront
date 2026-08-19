@@ -86,17 +86,16 @@ export const api = {
     },
     async getHelpers(filters = {}) {
         try {
-            const { payload, token } = isTokenExpired();
-
+            // const { payload, token } = isTokenExpired();
             const params = new URLSearchParams();
             Object.entries(filters).forEach(([key, value]) => {
                 if (value !== null && value !== "") params.append(key, value);
             });
             const res = await fetch(
-                `${BASE_URL}/api/v1/helpers?${params.toString()}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                `${BASE_URL}/api/v1/helpers?${params.toString()}`
+                // {
+                //     headers: { Authorization: `Bearer ${token}` },
+                // }
             );
             if (!res.ok) throw new Error("Backend error");
             const data = await res.json();
@@ -210,10 +209,12 @@ export const api = {
 
     async getCategories() {
         try {
-            const { payload, token } = isTokenExpired();
-            const res = await fetch(`${BASE_URL}/api/v1/categories`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            // const { payload, token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/api/v1/categories`
+            //     {
+            //     headers: { Authorization: `Bearer ${token}` },
+            // }
+        );
             if (!res.ok) throw new Error("Backend error");
             const data = await res.json();
             return {
