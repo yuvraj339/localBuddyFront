@@ -18,9 +18,10 @@
             </div>
 
             <div class="mb-6 border-b border-gray-200">
-                <nav class="flex space-x-8">
+                <nav
+                    class="flex space-x-6 sm:space-x-8 overflow-x-auto whitespace-nowrap scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
                     <button @click="activeTab = 'verifications'" :class="[
-                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors shrink-0',
                         activeTab === 'verifications'
                             ? 'border-primary-500 text-primary-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700',
@@ -28,7 +29,7 @@
                         Pending Verifications
                     </button>
                     <button @click="activeTab = 'users'" :class="[
-                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors shrink-0',
                         activeTab === 'users'
                             ? 'border-primary-500 text-primary-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700',
@@ -36,7 +37,7 @@
                         Users
                     </button>
                     <button @click="activeTab = 'disputes'" :class="[
-                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors shrink-0',
                         activeTab === 'disputes'
                             ? 'border-primary-500 text-primary-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700',
@@ -44,7 +45,7 @@
                         Disputes
                     </button>
                     <button @click="activeTab = 'analytics'" :class="[
-                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors shrink-0',
                         activeTab === 'analytics'
                             ? 'border-primary-500 text-primary-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700',
@@ -52,13 +53,13 @@
                         Analytics
                     </button>
                     <router-link to="/admin/roles-permissions" :class="[
-                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors shrink-0',
                         'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
                     ]">
                         Roles & Permissions
                     </router-link>
                     <router-link to="/admin/categories" :class="[
-                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                        'py-4 px-1 border-b-2 font-medium text-sm transition-colors shrink-0',
                         'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
                     ]">
                         Categories
@@ -67,13 +68,14 @@
             </div>
 
             <div v-if="activeTab === 'verifications'" class="card">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                     <div>
                         <h2 class="text-xl font-semibold text-gray-900">Pending ID Verifications</h2>
                         <p class="text-sm text-gray-500 mt-1">Review helper identity submissions before approving them.
                         </p>
                     </div>
-                    <span class="badge badge-warning">{{ pendingVerifications.length }} pending</span>
+                    <span class="badge badge-warning self-start sm:self-auto">{{ pendingVerifications.length }}
+                        pending</span>
                 </div>
 
                 <div v-if="!pendingVerifications.length" class="text-center py-12">
@@ -84,29 +86,31 @@
 
                 <div v-else class="space-y-4">
                     <div v-for="verification in pendingVerifications" :key="verification.id"
-                        class="border border-gray-200 rounded-xl p-5">
-                        <div class="flex items-start justify-between">
-                            <div class="flex items-start space-x-4">
+                        class="border border-gray-200 rounded-xl p-4 sm:p-5">
+                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                            <div class="flex items-start space-x-4 min-w-0">
                                 <img v-if="verification.avatar" :src="verification.avatar" :alt="verification.name"
-                                    class="w-16 h-16 rounded-full object-cover" />
+                                    class="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover shrink-0" />
                                 <div v-else
-                                    class="w-16 h-16 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xl font-semibold">
+                                    class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xl font-semibold shrink-0">
                                     {{ verification.name.charAt(0) }}
                                 </div>
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">{{ verification.name }}</h3>
-                                    <p class="text-sm text-gray-600">{{ verification.email }}</p>
+                                <div class="min-w-0">
+                                    <h3 class="font-semibold text-gray-900 truncate">{{ verification.name }}</h3>
+                                    <p class="text-sm text-gray-600 truncate">{{ verification.email }}</p>
                                     <p class="text-sm text-gray-600">{{ verification.phone }}</p>
                                     <span class="badge badge-warning mt-2">Pending Review</span>
                                 </div>
                             </div>
-                            <div class="flex space-x-2">
+                            <div class="flex space-x-2 shrink-0">
                                 <button @click="reviewVerification(verification.id, 'rejected')"
-                                    :disabled="reviewingId === verification.id" class="btn btn-danger text-sm">
+                                    :disabled="reviewingId === verification.id"
+                                    class="btn btn-danger text-sm flex-1 sm:flex-none">
                                     Reject
                                 </button>
                                 <button @click="reviewVerification(verification.id, 'approved')"
-                                    :disabled="reviewingId === verification.id" class="btn btn-success text-sm">
+                                    :disabled="reviewingId === verification.id"
+                                    class="btn btn-success text-sm flex-1 sm:flex-none">
                                     {{ reviewingId === verification.id ? 'Saving...' : 'Approve' }}
                                 </button>
                             </div>
@@ -116,18 +120,19 @@
             </div>
 
             <div v-if="activeTab === 'users'" class="card">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-semibold text-gray-900">
+                <div class="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
+                    <h2 class="text-xl font-semibold text-gray-900 shrink-0">
                         User Management
                     </h2>
-                    <div class="flex space-x-4">
-                        <input v-model="userSearch" type="text" placeholder="Search users..." class="input w-64" />
-                        <select v-model="userFilter" class="input">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+                        <input v-model="userSearch" type="text" placeholder="Search users..."
+                            class="input w-full sm:w-56 lg:w-64" />
+                        <select v-model="userFilter" class="input w-full sm:w-40">
                             <option value="all">All Users</option>
                             <option value="customers">Customers</option>
                             <option value="helpers">Helpers</option>
                         </select>
-                        <select v-model="userPageSize" class="input">
+                        <select v-model="userPageSize" class="input w-full sm:w-36">
                             <option :value="10">10 per page</option>
                             <option :value="25">25 per page</option>
                             <option :value="50">50 per page</option>
@@ -135,7 +140,9 @@
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
+
+                <!-- Desktop table -->
+                <div class="hidden md:block overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-gray-50">
                             <tr>
@@ -172,7 +179,7 @@
                                             {{ user.name.charAt(0) }}
                                         </div>
                                         <div class="ml-4">
-                                            <div class="font-medium text-gray-900">
+                                            <div class="font-medium text-gray-900 capitalize">
                                                 {{ user.name }}
                                             </div>
                                             <div class="text-sm text-gray-500">
@@ -182,22 +189,14 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="badge badge-primary">{{
-                                        user.role
-                                    }}</span>
+                                    <span class="badge badge-primary capitalize">{{ user.role }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span :class="[
                                         'badge',
-                                        user.verified
-                                            ? 'badge-success'
-                                            : 'badge-warning',
+                                        user.verified ? 'badge-success' : 'badge-warning',
                                     ]">
-                                        {{
-                                            user.verified
-                                                ? "Verified"
-                                                : "Unverified"
-                                        }}
+                                        {{ user.verified ? "Verified" : "Unverified" }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -214,9 +213,41 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="flex items-center justify-between mt-6 text-sm text-gray-600">
+
+                <!-- Mobile card list -->
+                <div class="md:hidden space-y-3">
+                    <div v-for="user in allUsers" :key="user.id" class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center gap-3">
+                            <img v-if="user.avatar" :src="user.avatar" :alt="user.name"
+                                class="w-11 h-11 rounded-full object-cover shrink-0" />
+                            <div v-else
+                                class="w-11 h-11 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-semibold shrink-0">
+                                {{ user.name.charAt(0) }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="font-medium text-gray-900 truncate">{{ user.name }}</div>
+                                <div class="text-sm text-gray-500 truncate">{{ user.email }}</div>
+                            </div>
+                            <span class="badge badge-primary shrink-0">{{ user.role }}</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 text-sm">
+                            <div class="flex items-center gap-2">
+                                <span :class="['badge', user.verified ? 'badge-success' : 'badge-warning']">
+                                    {{ user.verified ? "Verified" : "Unverified" }}
+                                </span>
+                                <span class="text-gray-500">{{ formatDate(user.memberSince) }}</span>
+                            </div>
+                            <button @click="toggleUserStatus(user)" :disabled="updatingUserId === user.id"
+                                :class="user.isActive ? 'text-danger-600 hover:text-danger-700' : 'text-green-600 hover:text-green-700'">
+                                {{ updatingUserId === user.id ? 'Saving...' : user.isActive ? 'Suspend' : 'Activate' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 text-sm text-gray-600">
                     <span>Showing {{ userRangeStart }}–{{ userRangeEnd }} of {{ userTotal }} users</span>
-                    <div class="flex items-center space-x-3">
+                    <div class="flex items-center justify-between sm:justify-start space-x-3">
                         <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1"
                             class="btn btn-secondary text-sm">Previous</button>
                         <span>Page {{ currentPage }} of {{ totalPages }}</span>
@@ -240,15 +271,15 @@
                 </div>
                 <div v-else class="space-y-4">
                     <div v-for="dispute in disputes" :key="dispute.id" class="border border-red-200 rounded-lg p-4">
-                        <div class="flex justify-between gap-4">
-                            <div>
+                        <div class="flex flex-col sm:flex-row sm:justify-between gap-3">
+                            <div class="min-w-0">
                                 <h3 class="font-semibold text-gray-900">{{ dispute.category }} booking</h3>
-                                <p class="text-sm text-gray-600">{{ dispute.customerName }} · {{ dispute.customerEmail
-                                    }}</p>
+                                <p class="text-sm text-gray-600 truncate">{{ dispute.customerName }} · {{
+                                    dispute.customerEmail }}</p>
                                 <p v-if="dispute.description" class="mt-2 text-sm text-gray-700">{{ dispute.description
-                                    }}</p>
+                                }}</p>
                             </div>
-                            <div class="text-right text-sm">
+                            <div class="text-left sm:text-right text-sm shrink-0">
                                 <p class="font-semibold">₹{{ dispute.amount.toLocaleString() }}</p>
                                 <p class="text-gray-500">{{ formatDate(dispute.createdAt) }}</p>
                             </div>
