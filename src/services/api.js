@@ -485,6 +485,40 @@ export const api = {
         }
     },
 
+    async requestPasswordReset(email) {
+        try {
+            const res = await fetch(`${BASE_URL}/auth/forgot-password`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || "Unable to request a password reset");
+            }
+            return { success: true, message: data.message };
+        } catch (error) {
+            return { success: false, error: error.message || "Network error" };
+        }
+    },
+
+    async resetPassword(token, password) {
+        try {
+            const res = await fetch(`${BASE_URL}/auth/reset-password`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, password }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.detail || "Unable to reset password");
+            }
+            return { success: true, message: data.message };
+        } catch (error) {
+            return { success: false, error: error.message || "Network error" };
+        }
+    },
+
     async register(userData) {
         try {
             const res = await fetch(`${BASE_URL}/auth/register`, {

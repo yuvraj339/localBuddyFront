@@ -2,15 +2,15 @@
     <div class="min-h-screen bg-gray-50 py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">Messages</h1>
-                <p class="text-gray-600">Chat with helpers and customers</p>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ t("chat.messagesTitle") }}</h1>
+                <p class="text-gray-600">{{ t("chat.chatSubtitle") }}</p>
             </div>
 
             <div class="card p-0 overflow-hidden" style="height: 70vh">
                 <div class="grid grid-cols-3 h-full">
                     <div class="col-span-1 border-r border-gray-200 overflow-y-auto">
                         <div class="p-4 border-b border-gray-200">
-                            <input type="text" placeholder="Search conversations..." class="input" />
+                            <input type="text" :placeholder="t('chat.searchConversations')" class="input" />
                         </div>
                         <div v-if="helper" :class="[
                             'p-4 border-b border-gray-200 cursor-pointer transition-colors hover:bg-gray-50 bg-primary-50',
@@ -41,7 +41,7 @@
                                         </h4>
                                         <span class="text-xs text-gray-500">{{
                                             formattedDate(now)
-                                            }}</span>
+                                        }}</span>
                                     </div>
                                     <p class="text-sm text-gray-600 truncate">
                                         Start discusstion..
@@ -98,10 +98,10 @@
                             <div class="text-center">
                                 <div class="text-6xl mb-4">💬</div>
                                 <div class="text-xl text-gray-600">
-                                    Select a conversation
+                                    {{ t("chat.selectConversation") }}
                                 </div>
                                 <p class="text-gray-500">
-                                    Choose a chat to start messaging
+                                    {{ t("chat.chooseChatPrompt") }}
                                 </p>
                             </div>
                         </div>
@@ -163,10 +163,10 @@
                         </template>
                         <div class="p-4 border-t border-gray-200 bg-white">
                             <form @submit.prevent="sendMessage" class="flex space-x-3">
-                                <input v-model="newMessage" type="text" placeholder="Type a message..."
+                                <input v-model="newMessage" type="text" :placeholder="t('chat.typeMessagePlaceholder')"
                                     class="input flex-1" />
                                 <button type="submit" class="btn btn-primary">
-                                    Send
+                                    {{ t("chat.sendBtn") }}
                                 </button>
                             </form>
                         </div>
@@ -185,7 +185,9 @@ import { useRoute } from "vue-router";
 import { helperAvatarSrc } from "../utils/util";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "../stores/auth";
+import { useI18n } from "../i18n";
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 
 const helperStore = useHelperStore();

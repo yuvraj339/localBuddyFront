@@ -7,7 +7,27 @@ export const supportedLanguages = [
 
 const messages = {
     en: {
+        chat: {
+            messagesTitle: "Messages",
+            chatSubtitle: "Chat with helpers and customers",
+            searchConversations: "Search conversations...",
+            selectConversation: "Select a conversation",
+            chooseChatPrompt: "Choose a chat to start messaging",
+            typeMessagePlaceholder: "Type a message...",
+            sendBtn: "Send"
+        },
         auth:{
+            setNewPasswordTitle: "Set a new password",
+            chooseNewPasswordDesc: "Choose a new password for your TimeBuddy account.",
+            newPasswordLabel: "New password",
+            passwordHint: "At least 8 characters",
+            confirmNewPasswordLabel: "Confirm new password",
+            confirmPasswordPlaceholder: "Re-enter your password",
+            resetPasswordBtn: "Reset password",
+            resetYourPassword: "Reset your password",
+            enterEmailInstructions: "Enter your email, and we'll send you instructions to reset your password.",
+            resetInstructionsSent: "If an account exists for this email address, password reset instructions have been sent.",
+            sendInstructionsBtn: "Send reset instructions",
             welcomeBack: "Welcome Back",signInAccount: "Sign in to your account",emailAddress: "Email Address",password: "Password",phoneNumber: "Phone Number",rememberMe: "Remember me",forgotPassword: "Forgot password?",signIn: "Sign In",noAccount: "Don't have an account? ",createAccountTitle: "Create Account",joinToday: "Join TimeBuddy today",iWantTo: "I want to",findHelp: "Find Help",offerHelp: "Offer Help",fullName: "Full Name",termsAgreement: "I agree to the Terms of Service and Privacy Policy",createAccountBtn: "Create Account",hasAccount: "Already have an account?"
           },
         booking: { cancelBooking:"Cancel Booking",trackLocation:"Track Location",date: "Date",time: "Time",duration: "Duration",message: "Message",total: "Total", myBookings: "My Bookings", myBookingsDes: "View and manage your bookings", no:"No", bookings:"bookings", your:"Your", bookingsDes:" bookings will appear here", findHelpers: "Find Helpers", },
@@ -17,7 +37,27 @@ const messages = {
         categories: { title: "Categories", add: "Add Category", name: "Name", description: "Description", icon: "Icon", helpers: "Helpers", actions: "Actions", edit: "Edit", delete: "Delete", create: "Create Category", update: "Edit Category", save: "Save", cancel: "Cancel", loading: "Loading categories...", noCategories: "No categories found", createFirst: "Create your first category", languageName: "Name ({language})", languageDescription: "Description ({language})" },
     },
     hi: {
+        chat: {
+            messagesTitle: "मैसेज",
+            chatSubtitle: "हेल्पर और कस्टमर के साथ चैट करें",
+            searchConversations: "बातचीत खोजें...",
+            selectConversation: "कोई बातचीत चुनें",
+            chooseChatPrompt: "मैसेज करना शुरू करने के लिए कोई चैट चुनें",
+            typeMessagePlaceholder: "मैसेज लिखें...",
+            sendBtn: "भेजें"
+        },
         auth:{
+            setNewPasswordTitle: "नया पासवर्ड सेट करें",
+            chooseNewPasswordDesc: "अपने TimeBuddy अकाउंट के लिए नया पासवर्ड चुनें।",
+            newPasswordLabel: "नया पासवर्ड",
+            passwordHint: "कम से कम 8 कैरेक्टर",
+            confirmNewPasswordLabel: "नया पासवर्ड कन्फ़र्म करें",
+            confirmPasswordPlaceholder: "अपना पासवर्ड दोबारा डालें",
+            resetPasswordBtn: "पासवर्ड रीसेट करें",
+            resetYourPassword: "अपना पासवर्ड रीसेट करें",
+            enterEmailInstructions: "अपना ईमेल डालें, और हम आपको पासवर्ड रीसेट करने के निर्देश भेजेंगे।",
+            resetInstructionsSent: "अगर इस ईमेल एड्रेस से कोई अकाउंट जुड़ा है, तो पासवर्ड रीसेट करने के निर्देश भेज दिए गए हैं।",
+            sendInstructionsBtn: "रीसेट करने के निर्देश भेजें",
             welcomeBack: "वापसी पर स्वागत है", signInAccount: "अपने अकाउंट में साइन इन करें", emailAddress: "ईमेल एड्रेस", password: "पासवर्ड", phoneNumber: "फ़ोन नंबर", rememberMe: "मुझे याद रखें", forgotPassword: "पासवर्ड भूल गए?", signIn: "साइन इन करें", noAccount: "अकाउंट नहीं है? ", createAccountTitle: "अकाउंट बनाएँ", joinToday: "आज ही TimeBuddy से जुड़ें", iWantTo: "मैं चाहता हूँ", findHelp: "मदद ढूँढना", offerHelp: "मदद की पेशकश करना", fullName: "पूरा नाम", termsAgreement: "मैं सेवा की शर्तों और प्राइवेसी पॉलिसी से सहमत हूँ", createAccountBtn: "अकाउंट बनाएँ", hasAccount: "पहले से अकाउंट है?"
           },
         booking: { cancelBooking:"बुकिंग रद्द करें",trackLocation:"लोकेशन ट्रैक करें", date: "तारीख",time: "समय",duration: "अवधि",message: "संदेश",total: "कुल", myBookings: "मेरी बुकिंग्स", myBookingsDes: "अपनी बुकिंग्स देखें और मैनेज करें", no:"नहीं है", bookings:"कोई बुकिंग", your:"आपकी", bookingsDes:" बुकिंग यहाँ दिखाई देंगी", findHelpers: "मदद करने वालों को खोजें"},
