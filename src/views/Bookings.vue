@@ -61,7 +61,7 @@
                                         ? 'badge-danger'
                                         : '',
                                 ]">
-                                    {{ booking.status }}
+                                    {{ t(`status.${booking.status.toLowerCase().replaceAll(' ', '_')}`) }}
                                 </span>
                             </div>
 
