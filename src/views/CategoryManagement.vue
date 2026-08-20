@@ -2,7 +2,7 @@
     <div class="min-h-screen bg-gray-50 py-8">
 
         <div class="max-w-6xl mx-auto px-4">
-            <div class="flex justify-between items-center mb-8">
+            <div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-8">
                 <Breadcrumbs :items="breadcrumbItems" />
                 <button @click="categoryStore.openCreateModal"
                     class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
@@ -26,6 +26,7 @@
                 !categoryStore.loading &&
                 categoryStore.getCategories.length > 0
             " class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-100">
                         <tr>
@@ -71,6 +72,7 @@
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- Empty State -->
@@ -88,8 +90,8 @@
 
         <!-- Create/Edit Modal -->
         <div v-if="categoryStore.showModal"
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6">
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg shadow-lg max-w-md w-full max-h-[calc(100dvh-2rem)] overflow-y-auto p-6">
                 <h2 class="text-2xl font-bold mb-4">
                     {{
                         categoryStore.editingCategory

@@ -4,7 +4,7 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th v-for="column in columns" :key="column.key"
-                        :class="['px-6 py-3 text-left text-xs font-medium uppercase tracking-wider', column.sortable ? 'cursor-pointer text-gray-700 select-none' : 'text-gray-500']"
+                        :class="['px-4 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap', column.sortable ? 'cursor-pointer text-gray-700 select-none' : 'text-gray-500']"
                         @click="column.sortable && $emit('sort', column.key)">
                         {{ column.label }}
                         <span v-if="column.sortable && sortBy === column.key">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
@@ -13,7 +13,7 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="row in rows" :key="row.id">
-                    <td v-for="column in columns" :key="column.key" class="px-6 py-4">
+                    <td v-for="column in columns" :key="column.key" class="px-4 sm:px-6 py-4">
                         <slot :name="`cell-${column.key}`" :row="row">
                             {{ row[column.key] ?? '—' }}
                         </slot>
@@ -26,9 +26,9 @@
         </table>
     </div>
 
-    <div class="flex items-center justify-between mt-6 text-sm text-gray-600">
+    <div class="mt-6 flex flex-col gap-3 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between">
         <span>Showing {{ rangeStart }}–{{ rangeEnd }} of {{ total }} entries</span>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <button class="px-3 py-2 rounded-lg bg-gray-200 text-gray-900 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed" :disabled="page <= 1" @click="$emit('page-change', page - 1)">Previous</button>
             <span>Page {{ page }} of {{ totalPages }}</span>
             <button class="px-3 py-2 rounded-lg bg-gray-200 text-gray-900 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed" :disabled="page >= totalPages" @click="$emit('page-change', page + 1)">Next</button>

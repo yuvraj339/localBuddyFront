@@ -3,14 +3,14 @@
         <section class="hero bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-20">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
-                    <h1 class="text-5xl font-bold mb-6">
+                    <h1 class="text-4xl sm:text-5xl font-bold mb-6">
                         {{ t("home.heroTitle").split("\n")[0] }}<br />
                         {{ t("home.heroTitle").split("\n")[1] }}
                     </h1>
                     <p class="text-xl mb-8 text-blue-50">
                         {{ t("home.heroSubtitle") }}
                     </p>
-                    <div class="flex justify-center space-x-4">
+                    <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
                         <router-link to="/helpers"
                             class="btn bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg">
                             {{ t("nav.findHelpers") }}
