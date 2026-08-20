@@ -7,6 +7,9 @@ export const supportedLanguages = [
 
 const messages = {
     en: {
+        auth:{
+            welcomeBack: "Welcome Back",signInAccount: "Sign in to your account",emailAddress: "Email Address",password: "Password",phoneNumber: "Phone Number",rememberMe: "Remember me",forgotPassword: "Forgot password?",signIn: "Sign In",noAccount: "Don't have an account? ",createAccountTitle: "Create Account",joinToday: "Join TimeBuddy today",iWantTo: "I want to",findHelp: "Find Help",offerHelp: "Offer Help",fullName: "Full Name",termsAgreement: "I agree to the Terms of Service and Privacy Policy",createAccountBtn: "Create Account",hasAccount: "Already have an account?"
+          },
         booking: { cancelBooking:"Cancel Booking",trackLocation:"Track Location",date: "Date",time: "Time",duration: "Duration",message: "Message",total: "Total", myBookings: "My Bookings", myBookingsDes: "View and manage your bookings", no:"No", bookings:"bookings", your:"Your", bookingsDes:" bookings will appear here", findHelpers: "Find Helpers", },
         status: {upcoming: "Upcoming",pending: "Pending",accepted: "Accepted",rejected: "Rejected",in_progress: "In Progress",completed: "Completed",cancelled: "Cancelled",disputed: "Disputed" },
         nav: { findHelpers: "Find Helpers", bookings: "Bookings", messages: "Messages", dashboard: "Dashboard", login: "Login", signUp: "Sign Up", myProfile: "My Profile", logout: "Logout", language: "Language" },
@@ -14,6 +17,9 @@ const messages = {
         categories: { title: "Categories", add: "Add Category", name: "Name", description: "Description", icon: "Icon", helpers: "Helpers", actions: "Actions", edit: "Edit", delete: "Delete", create: "Create Category", update: "Edit Category", save: "Save", cancel: "Cancel", loading: "Loading categories...", noCategories: "No categories found", createFirst: "Create your first category", languageName: "Name ({language})", languageDescription: "Description ({language})" },
     },
     hi: {
+        auth:{
+            welcomeBack: "वापसी पर स्वागत है", signInAccount: "अपने अकाउंट में साइन इन करें", emailAddress: "ईमेल एड्रेस", password: "पासवर्ड", phoneNumber: "फ़ोन नंबर", rememberMe: "मुझे याद रखें", forgotPassword: "पासवर्ड भूल गए?", signIn: "साइन इन करें", noAccount: "अकाउंट नहीं है? ", createAccountTitle: "अकाउंट बनाएँ", joinToday: "आज ही TimeBuddy से जुड़ें", iWantTo: "मैं चाहता हूँ", findHelp: "मदद ढूँढना", offerHelp: "मदद की पेशकश करना", fullName: "पूरा नाम", termsAgreement: "मैं सेवा की शर्तों और प्राइवेसी पॉलिसी से सहमत हूँ", createAccountBtn: "अकाउंट बनाएँ", hasAccount: "पहले से अकाउंट है?"
+          },
         booking: { cancelBooking:"बुकिंग रद्द करें",trackLocation:"लोकेशन ट्रैक करें", date: "तारीख",time: "समय",duration: "अवधि",message: "संदेश",total: "कुल", myBookings: "मेरी बुकिंग्स", myBookingsDes: "अपनी बुकिंग्स देखें और मैनेज करें", no:"नहीं है", bookings:"कोई बुकिंग", your:"आपकी", bookingsDes:" बुकिंग यहाँ दिखाई देंगी", findHelpers: "मदद करने वालों को खोजें"},
         status: {upcoming: "आने वाली",pending: "पेंडिंग",accepted: "स्वीकार की गईं",rejected: "अस्वीकार की गईं",in_progress: "प्रगति पर",completed: "पूरी हो चुकीं",cancelled: "कैंसल की गईं",disputed: "विवादित" },
         nav: { findHelpers: "सहायक खोजें", bookings: "बुकिंग", messages: "संदेश", dashboard: "डैशबोर्ड", login: "लॉग इन", signUp: "साइन अप", myProfile: "मेरी प्रोफ़ाइल", logout: "लॉग आउट", language: "भाषा" },

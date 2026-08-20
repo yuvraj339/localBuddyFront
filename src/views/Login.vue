@@ -1,79 +1,47 @@
 ﻿<template>
-    <div
-        class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8"
-    >
+    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full">
             <div class="card">
                 <div class="text-center mb-8">
                     <h2 class="text-3xl font-bold text-gray-900">
-                        Welcome Back
+                        {{ t("auth.welcomeBack") }}
                     </h2>
-                    <p class="text-gray-600 mt-2">Sign in to your account</p>
+                    <p class="text-gray-600 mt-2">{{ t("auth.signInAccount") }}</p>
                 </div>
 
                 <form @submit.prevent="handleLogin" class="space-y-6">
-                    <div
-                        v-if="authStore.error"
-                        class="bg-red-100 text-red-700 p-3 border-r-2 rounded-lg text-sm"
-                    >
+                    <div v-if="authStore.error" class="bg-red-100 text-red-700 p-3 border-r-2 rounded-lg text-sm">
                         {{ authStore.error }}
                     </div>
 
                     <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-2"
-                        >
-                            Email Address
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ t("auth.emailAddress") }}
                         </label>
-                        <input
-                            v-model="form.email"
-                            type="email"
-                            required
-                            class="input"
-                            placeholder="you@example.com"
-                        />
+                        <input v-model="form.email" type="email" required class="input" placeholder="you@example.com" />
                     </div>
 
                     <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-2"
-                        >
-                            Password
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ t("auth.password") }}
                         </label>
-                        <input
-                            v-model="form.password"
-                            type="password"
-                            required
-                            class="input"
-                            placeholder="Enter your password"
-                        />
+                        <input v-model="form.password" type="password" required class="input"
+                            placeholder="Enter your password" />
                     </div>
 
                     <div class="flex items-center justify-between">
                         <label class="flex items-center">
-                            <input
-                                v-model="form.remember"
-                                type="checkbox"
-                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                            />
-                            <span class="ml-2 text-sm text-gray-700"
-                                >Remember me</span
-                            >
+                            <input v-model="form.remember" type="checkbox"
+                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" />
+                            <span class="ml-2 text-sm text-gray-700">{{ t("auth.rememberMe") }}</span>
                         </label>
-                        <a
-                            href="#"
-                            class="text-sm text-primary-600 hover:text-primary-700"
-                        >
-                            Forgot password?
+                        <a href="#" class="text-sm text-primary-600 hover:text-primary-700">
+                            {{ t("auth.forgotPassword") }}
                         </a>
                     </div>
 
-                    <button
-                        type="submit"
-                        :disabled="authStore.loading"
-                        class="btn btn-primary w-full py-3"
-                    >
-                        {{ authStore.loading ? "Signing in..." : "Sign In" }}
+                    <button type="submit" :disabled="authStore.loading" class="btn btn-primary w-full py-3">
+                        {{ authStore.loading ? "Signing in..." : t("auth.signIn") }}
                     </button>
                 </form>
 
@@ -107,12 +75,9 @@
 
                 <div class="mt-6 text-center">
                     <p class="text-sm text-gray-600">
-                        Don't have an account?
-                        <router-link
-                            to="/register"
-                            class="text-primary-600 hover:text-primary-700 font-medium"
-                        >
-                            Sign up
+                        {{ t("auth.noAccount") }}
+                        <router-link to="/register" class="text-primary-600 hover:text-primary-700 font-medium">
+                            {{ t("nav.signUp") }}
                         </router-link>
                     </p>
                 </div>
@@ -125,7 +90,9 @@
 import { reactive } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
+import { useI18n } from "../i18n";
 
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 
