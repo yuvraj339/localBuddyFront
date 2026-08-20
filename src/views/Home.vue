@@ -84,7 +84,7 @@
                                 <span class="text-yellow-400 mr-1">★</span>
                                 <span class="font-medium text-gray-800">{{
                                     helper.rating
-                                    }}</span>
+                                }}</span>
                                 <span class="text-gray-500 text-sm ml-1">({{ helper.reviewCount }})</span>
                             </div>
                             <p class="text-center text-gray-600 text-sm mb-4" v-if="helper.bio">
@@ -148,22 +148,53 @@
             </div>
         </section>
 
-        <section class="py-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
+        <section class="py-16 sm:py-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
             <div class="max-w-4xl mx-auto px-4 text-center">
-                <h2 class="text-4xl font-bold mb-6">{{ t("home.ready") }}</h2>
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6">{{ authStore.isAuthenticated ? t("home.welcomeBack") : t("home.ready") }}</h2>
                 <p class="text-xl mb-8 text-blue-50">
-                    {{ t("home.join") }}
+                    {{ authStore.isAuthenticated ? t("home.loggedInPrompt") : t("home.join") }}
                 </p>
-                <router-link to="/register" class="btn bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg">
-                    {{ t("home.signUpNow") }}
+                <template v-if="!authStore.isAuthenticated">
+                    <router-link to="/register" class="btn bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg">
+                        {{ t("home.signUpNow") }}
+                    </router-link>
+                </template>
+                <router-link v-else :to="dashboardPath" class="btn bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg">
+                    {{ t("home.goToDashboard") }}
                 </router-link>
             </div>
         </section>
+
+        <footer class="bg-gray-900 text-gray-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="lg:col-span-2">
+                        <router-link to="/" class="text-2xl font-bold text-white">TimeBuddy</router-link>
+                        <p class="mt-3 max-w-md text-sm leading-6 text-gray-400">{{ t("home.footerDescription") }}</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">{{ t("home.quickLinks") }}</h3>
+                        <nav class="mt-3 flex flex-col items-start gap-2 text-sm">
+                            <router-link to="/helpers" class="hover:text-white">{{ t("nav.findHelpers") }}</router-link>
+                            <router-link v-if="authStore.isAuthenticated" to="/bookings" class="hover:text-white">{{ t("nav.bookings") }}</router-link>
+                            <router-link v-if="authStore.isAuthenticated" to="/chat" class="hover:text-white">{{ t("nav.messages") }}</router-link>
+                            <router-link v-else to="/register" class="hover:text-white">{{ t("nav.signUp") }}</router-link>
+                        </nav>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">{{ t("home.contactUs") }}</h3>
+                        <p class="mt-3 text-sm text-gray-400">{{ t("home.needHelp") }}</p>
+                        <a href="mailto:shekhawatyuvraj339@gmail.com" class="mt-2 inline-block break-all text-sm text-primary-300 hover:text-white">shekhawatyuvraj339@gmail.com</a>
+                    </div>
+                </div>
+                <div class="mt-10 border-t border-gray-800 pt-6 text-center text-sm text-gray-500 sm:text-left">© {{ currentYear }} TimeBuddy. {{ t("home.rightsReserved") }}</div>
+            </div>
+        </footer>
     </div>
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import { useHelperStore } from "../stores/helper";
@@ -178,6 +209,8 @@ const authStore = useAuthStore();
 const helperStore = useHelperStore();
 const { t } = useI18n();
 const categoryText = localizeCategory;
+const currentYear = new Date().getFullYear();
+const dashboardPath = computed(() => authStore.hasRole("helper") ? "/helper-dashboard" : "/dashboard");
 
 onMounted(() => {
     categoryStore.fetchCategories();

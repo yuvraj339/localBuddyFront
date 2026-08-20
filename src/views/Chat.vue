@@ -1,263 +1,35 @@
-﻿<template>
-    <div class="min-h-screen bg-gray-50 py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ t("chat.messagesTitle") }}</h1>
-                <p class="text-gray-600">{{ t("chat.chatSubtitle") }}</p>
-            </div>
-
-            <div class="card p-0 overflow-hidden" style="height: 70vh">
-                <div class="grid grid-cols-3 h-full">
-                    <div class="col-span-1 border-r border-gray-200 overflow-y-auto">
-                        <div class="p-4 border-b border-gray-200">
-                            <input type="text" :placeholder="t('chat.searchConversations')" class="input" />
-                        </div>
-                        <div v-if="helper" :class="[
-                            'p-4 border-b border-gray-200 cursor-pointer transition-colors hover:bg-gray-50 bg-primary-50',
-                        ]">
-                            <div class="flex items-start space-x-3" @click="
-                                selectChat({
-                                    chat_user: {
-                                        id: helper.id,
-                                        full_name: helper.name,
-                                        avatar_url: helper.avatar,
-                                    },
-                                })
-                                ">
-                                <div class="relative">
-                                    <img :src="helperAvatarSrc(helper.avatar)" :alt="helper.name"
-                                        class="w-12 h-12 rounded-full object-cover" />
-                                    <!-- <span
-                                        v-if="chat.unread > 0"
-                                        class="absolute -top-1 -right-1 bg-danger-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-                                    >
-                                        {{ chat.unread }}
-                                    </span> -->
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="font-semibold text-gray-900 truncate">
-                                            {{ helper.name }}
-                                        </h4>
-                                        <span class="text-xs text-gray-500">{{
-                                            formattedDate(now)
-                                        }}</span>
-                                    </div>
-                                    <p class="text-sm text-gray-600 truncate">
-                                        Start discusstion..
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-if="chats.length === 0" class="p-8 text-center">
-                            <div class="text-6xl mb-4">💬</div>
-                            <div class="text-gray-600">No messages yet</div>
-                        </div>
-
-                        <div v-for="chat in chats" :key="chat.chat_user.id" @click="selectChat(chat)" :class="[
-                            'p-4 border-b border-gray-200 cursor-pointer transition-colors hover:bg-gray-50',
-                            selectedChat?.id === chat.chat_user.id
-                                ? 'bg-primary-50'
-                                : '',
-                        ]">
-                            <div class="flex items-start space-x-3">
-                                <div class="relative">
-                                    <img :src="helperAvatarSrc(
-                                        chat.chat_user.avatar_url
-                                    )
-                                        " :alt="chat.chat_user.full_name"
-                                        class="w-12 h-12 rounded-full object-cover" />
-                                    <span v-if="chat.unread_count > 0"
-                                        class="absolute -top-1 -right-1 bg-danger-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                        {{ chat.unread_count }}
-                                    </span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="font-semibold text-gray-900 truncate">
-                                            {{ chat.chat_user.full_name }}
-                                        </h4>
-
-                                        <span class="text-xs text-gray-500">
-                                            <i class="capitalize">
-                                                ({{ chat.status }})
-                                            </i>
-                                            {{
-                                                formattedDate(chat.timestamp)
-                                            }}</span>
-                                    </div>
-                                    <p class="text-sm text-gray-600 truncate">
-                                        {{ chat.last_message }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-span-2 flex flex-col h-full">
-                        <div v-if="!selectedChat" class="flex-1 flex items-center justify-center">
-                            <div class="text-center">
-                                <div class="text-6xl mb-4">💬</div>
-                                <div class="text-xl text-gray-600">
-                                    {{ t("chat.selectConversation") }}
-                                </div>
-                                <p class="text-gray-500">
-                                    {{ t("chat.chooseChatPrompt") }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <template v-else>
-                            <div class="p-4 border-b border-gray-200 bg-white">
-                                <div class="flex items-center space-x-3">
-                                    <img :src="helperAvatarSrc(
-                                        selectedChat.avatar_url
-                                    )
-                                        " :alt="selectedChat.full_name" class="w-12 h-12 rounded-full object-cover" />
-                                    <div>
-                                        <h3 class="font-semibold text-gray-900">
-                                            {{ selectedChat.full_name }}
-                                        </h3>
-                                        <p class="text-sm text-gray-600">
-                                            Active now
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="flex-1 overflow-y-auto p-4 bg-gray-50 max-h-96">
-                                <div class="space-y-4">
-                                    <div v-for="message in selectedChat.messages" :key="message.id" :class="[
-                                        'flex',
-                                        message.sender_id ==
-                                            authStore?.user?.id
-                                            ? 'justify-end'
-                                            : 'justify-start',
-                                    ]">
-                                        <div :class="[
-                                            'max-w-xs lg:max-w-md px-4 py-2 rounded-lg',
-                                            message.sender_id ===
-                                                authStore?.user?.id
-                                                ? 'bg-primary-600 text-white'
-                                                : 'bg-white text-gray-900 border border-gray-200',
-                                        ]">
-                                            <p class="text-sm">
-                                                {{ message.text }}
-                                            </p>
-                                            <p :class="[
-                                                'text-xs mt-1',
-                                                message.sender_id ===
-                                                    authStore?.user?.id
-                                                    ? 'text-primary-100'
-                                                    : 'text-gray-500',
-                                            ]">
-                                                {{
-                                                    formattedDate(
-                                                        message.timestamp
-                                                    )
-                                                }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                        <div class="p-4 border-t border-gray-200 bg-white">
-                            <form @submit.prevent="sendMessage" class="flex space-x-3">
-                                <input v-model="newMessage" type="text" :placeholder="t('chat.typeMessagePlaceholder')"
-                                    class="input flex-1" />
-                                <button type="submit" class="btn btn-primary">
-                                    {{ t("chat.sendBtn") }}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<template>
+  <div class="min-h-screen bg-gray-50 py-5 sm:py-8 lg:py-12"><div class="mx-auto max-w-7xl px-0 sm:px-6 lg:px-8">
+    <div class="mb-5 px-4 sm:mb-8 sm:px-0"><h1 class="mb-2 text-2xl font-bold text-gray-900 sm:text-3xl">{{ t('chat.messagesTitle') }}</h1><p class="text-gray-600">{{ t('chat.chatSubtitle') }}</p></div>
+    <div class="card h-[calc(100dvh-10rem)] min-h-[32rem] overflow-hidden rounded-none p-0 sm:h-[70vh] sm:rounded-xl"><div class="grid h-full md:grid-cols-3">
+      <aside class="min-h-0 overflow-y-auto border-gray-200 md:border-r" :class="selectedChat ? 'hidden md:block' : 'block'">
+        <div class="sticky top-0 z-10 border-b bg-white p-4"><input v-model="searchQuery" type="search" :placeholder="t('chat.searchConversations')" class="input" /></div>
+        <button v-if="helper" type="button" class="w-full border-b p-4 text-left hover:bg-gray-50" @click="openChat({ chat_user: { id: helper.id, full_name: helper.name, avatar_url: helper.avatar } })"><ConversationRow :chat-user="{ id: helper.id, full_name: helper.name, avatar_url: helper.avatar }" :subtitle="t('chat.startConversation')" /></button>
+        <p v-if="!helper && !filteredChats.length" class="p-8 text-center text-gray-600">{{ t('chat.noMessages') }}</p>
+        <button v-for="chat in filteredChats" :key="chat.chat_user.id" type="button" class="w-full border-b p-4 text-left hover:bg-gray-50" :class="selectedChat?.id === chat.chat_user.id ? 'bg-primary-50' : ''" @click="openChat(chat)"><ConversationRow :chat-user="chat.chat_user" :subtitle="chat.last_message" :unread-count="chat.unread_count" /></button>
+      </aside>
+      <section class="min-h-0 flex flex-col md:col-span-2" :class="selectedChat ? 'flex' : 'hidden md:flex'">
+        <div v-if="!selectedChat" class="flex flex-1 items-center justify-center p-6 text-center"><div><div class="mb-4 text-6xl">💬</div><div class="text-xl text-gray-600">{{ t('chat.selectConversation') }}</div><p class="mt-1 text-gray-500">{{ t('chat.chooseChatPrompt') }}</p></div></div>
+        <template v-else>
+          <header class="flex items-center gap-3 border-b bg-white p-3 sm:p-4"><button type="button" class="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 md:hidden" @click="selectedChat = null">←</button><img :src="helperAvatarSrc(selectedChat.avatar_url)" :alt="selectedChat.full_name" class="h-11 w-11 rounded-full object-cover" /><div class="min-w-0"><h2 class="truncate font-semibold">{{ selectedChat.full_name }}</h2><p class="text-sm text-gray-600">{{ t('chat.activeNow') }}</p></div></header>
+          <div ref="messagesContainer" class="min-h-0 flex-1 overflow-y-auto bg-gray-50 p-4"><div class="space-y-4"><div v-for="message in selectedChat.messages || []" :key="message.id" class="flex" :class="message.sender_id === authStore.user?.id ? 'justify-end' : 'justify-start'"><div class="max-w-[85%] break-words rounded-lg px-4 py-2 sm:max-w-md" :class="message.sender_id === authStore.user?.id ? 'bg-primary-600 text-white' : 'border bg-white text-gray-900'"><p class="whitespace-pre-wrap text-sm">{{ message.text }}</p><p class="mt-1 text-xs opacity-70">{{ formattedDate(message.timestamp) }}</p></div></div></div></div>
+          <form class="flex gap-2 border-t bg-white p-3 sm:p-4" @submit.prevent="handleSend"><input v-model="newMessage" type="text" :placeholder="t('chat.typeMessagePlaceholder')" class="input min-w-0 flex-1" /><button type="submit" :disabled="sending || !newMessage.trim()" class="btn btn-primary shrink-0 disabled:opacity-50">{{ sending ? t('chat.sendingBtn') : t('chat.sendBtn') }}</button></form>
+        </template>
+      </section>
+    </div></div>
+  </div></div>
 </template>
-
 <script setup>
-import { ref, onMounted, onUnmounted, computed, watch } from "vue";
-import { useChatStore } from "../stores/chat";
-import { useHelperStore } from "../stores/helper";
-import { useRoute } from "vue-router";
-import { helperAvatarSrc } from "../utils/util";
-import { storeToRefs } from "pinia";
-import { useAuthStore } from "../stores/auth";
-import { useI18n } from "../i18n";
-
-const { t } = useI18n();
-const authStore = useAuthStore();
-
-const helperStore = useHelperStore();
-const helper = computed(() => helperStore.currentHelper);
-const chatStore = useChatStore();
-const { chats, selectedChat, newMessage, notificationCount } =
-    storeToRefs(chatStore);
-
-// actions can be destructured normally
-const {
-    fetchChats,
-    fetchMessages,
-    sendMessage,
-    selectChat,
-    fetchNotifications,
-} = chatStore;
-
-let notificationInterval = null;
-
-const startNotificationPolling = (interval) => {
-    clearInterval(notificationInterval);
-    notificationInterval = setInterval(() => {
-        fetchNotifications();
-    }, interval);
-};
-const route = useRoute();
-// helperId.value = route.query.helper;
-const now = new Date();
-// formattedDate
-const formattedDate = (date) => {
-    // If the string doesn't end with 'Z' or contain a timezone offset, append 'Z' to treat it as UTC
-    const timeString = date.endsWith("Z") || date.includes("+") ? date : date + "Z";
-
-    const d = new Date(timeString);
-    const today = new Date();
-
-    const isToday = d.toDateString() === today.toDateString();
-
-    return isToday
-        ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-        : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
-watch(chats, (val) => {
-    console.log("Chats updated:", val);
-});
-
-onMounted(() => {
-    fetchChats();
-    startNotificationPolling(60000); // 1 minute interval
-});
-
-watch(
-    () => route.query.helper,
-    (newId) => {
-        helperStore.fetchHelper(newId);
-    },
-    { immediate: true }
-);
-
-onUnmounted(() => {
-    clearInterval(notificationInterval);
-});
-
-const handleVisibilityChange = () => {
-    if (document.hidden) {
-        startNotificationPolling(600000); // 10 minutes interval
-    } else {
-        startNotificationPolling(60000); // 1 minute interval
-    }
-};
-
-document.addEventListener("visibilitychange", handleVisibilityChange);
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useChatStore } from '../stores/chat'; import { useHelperStore } from '../stores/helper'; import { useRoute } from 'vue-router'; import { helperAvatarSrc } from '../utils/util'; import { useAuthStore } from '../stores/auth'; import { useI18n } from '../i18n';
+import ConversationRow from '../components/ConversationRow.vue';
+const { t } = useI18n(); const authStore = useAuthStore(); const chatStore = useChatStore(); const helperStore = useHelperStore(); const route = useRoute();
+const { chats, selectedChat, newMessage } = storeToRefs(chatStore); const helper = computed(() => helperStore.currentHelper); const searchQuery = ref(''); const sending = ref(false); const messagesContainer = ref(null);
+const filteredChats = computed(() => { const q = searchQuery.value.trim().toLowerCase(); return q ? chats.value.filter(c => [c.chat_user?.full_name, c.last_message].some(v => v?.toLowerCase().includes(q))) : chats.value; });
+const formattedDate = (date) => { const d = new Date(date); return Number.isNaN(d.getTime()) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
+const scrollToLatest = async () => { await nextTick(); if (messagesContainer.value) messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight; };
+const openChat = async (chat) => { await chatStore.selectChat(chat); scrollToLatest(); };
+const handleSend = async () => { sending.value = true; await chatStore.sendMessage(); sending.value = false; scrollToLatest(); };
+watch(() => route.query.helper, id => { if (id) helperStore.fetchHelper(id); }, { immediate: true }); watch(() => selectedChat.value?.messages?.length, scrollToLatest); onMounted(() => chatStore.fetchChats());
 </script>

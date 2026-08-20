@@ -27,7 +27,6 @@ export const useChatStore = defineStore("chat", () => {
     };
 
     const sendMessage = async () => {
-        debugger;
         if (!newMessage.value.trim() || !selectedChat.value) return;
 
         const message = {
@@ -37,18 +36,20 @@ export const useChatStore = defineStore("chat", () => {
 
         const response = await api.sendMessage(message);
         if (response.success) {
+            selectedChat.value.messages ||= [];
             selectedChat.value.messages.push(response.data);
-            selectedChat.value.lastMessage = newMessage.value;
+            selectedChat.value.last_message = newMessage.value;
             selectedChat.value.timestamp = response.data.timestamp;
             newMessage.value = "";
         }
+        return response.success;
     };
 
     const selectChat = async (chat) => {
         if (!chat.chat_user) return true;
         selectedChat.value = chat.chat_user;
-        chat.unread = 0;
-        selectedChat.value.messages = await fetchMessages(chat.chat_user?.id);
+        chat.unread_count = 0;
+        selectedChat.value.messages = (await fetchMessages(chat.chat_user?.id)) || [];
         await api.updateChatStatus("read", chat.chat_user.id);
     };
 
@@ -61,7 +62,7 @@ export const useChatStore = defineStore("chat", () => {
     //     }
     // };
     // const selectChat = async () => await delay(300);
-    const fetchNotifications = async () => await delay(300);
+    const fetchNotifications = async () => notificationCount.value;
 
     return {
         chats,
