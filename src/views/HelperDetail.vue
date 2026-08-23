@@ -189,19 +189,17 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Payment Method
-                                    <span class="text-red-500">*</span>
-                                </label>
-                                <select v-model="bookingForm.paymentMethod" required class="input">
-                                    <option value="">
-                                        Select a payment method
-                                    </option>
-                                    <option value="UPI">UPI</option>
-                                    <option value="COD">
-                                        Cash on Delivery
-                                    </option>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Payment plan</label>
+                                <select v-model="bookingForm.paymentPlan" class="input">
+                                    <option value="full_online">Pay fully online</option>
+                                    <option value="half_online_half_cash">Pay 50% online, 50% cash</option>
+                                    <option value="full_cash">Pay fully in cash after service</option>
                                 </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Coupon code</label>
+                                <div class="flex gap-2"><input v-model.trim="bookingForm.couponCode" class="input min-w-0" placeholder="Enter coupon" /><button type="button" class="btn btn-secondary shrink-0" @click="loadQuote">Apply</button></div>
+                                <p v-if="quoteError" class="mt-1 text-sm text-red-600">{{ quoteError }}</p>
                             </div>
 
                             <div class="border-t pt-4">
@@ -215,9 +213,14 @@
                                         bookingForm.hours
                                     }}</span>
                                 </div>
+                                <template v-if="checkoutQuote">
+                                    <div class="flex justify-between mb-2"><span class="text-gray-600">Discount:</span><span>-₹{{ checkoutQuote.discount_amount }}</span></div>
+                                    <div class="flex justify-between mb-2"><span class="text-gray-600">Platform fee + GST:</span><span>₹{{ Number(checkoutQuote.customer_fee) + Number(checkoutQuote.gst_amount) }}</span></div>
+                                    <div class="flex justify-between mb-2"><span class="text-gray-600">Pay online / cash:</span><span>₹{{ checkoutQuote.online_amount }} / ₹{{ checkoutQuote.cash_amount }}</span></div>
+                                </template>
                                 <div class="flex justify-between text-lg font-bold">
                                     <span>Total:</span>
-                                    <span class="text-primary-600">₹{{ totalAmount }}</span>
+                                    <span class="text-primary-600">₹{{ checkoutQuote?.total_customer_amount || totalAmount }}</span>
                                 </div>
                             </div>
                             <div v-if="!helper.isAvailable">
@@ -255,8 +258,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from "vue";
-// import { api } from "../services/api";
+import { ref, computed, onMounted, reactive, watch } from "vue";
+import { api } from "../services/api";
 import { useRoute, useRouter } from "vue-router";
 import { useHelperStore } from "../stores/helper";
 import { useBookingStore } from "../stores/booking";
@@ -351,12 +354,36 @@ const bookingForm = reactive({
     hours: 2,
     category: "",
     description: "",
-    paymentMethod: "", // Add payment method field
+    paymentPlan: "full_online",
+    couponCode: "",
 });
+const checkoutQuote = ref(null);
+const quoteError = ref("");
 
 const totalAmount = computed(() => {
     return helper.value ? helper.value.hourlyRate * bookingForm.hours : 0;
 });
+const loadQuote = async () => {
+    if (!authStore.isAuthenticated || !helper.value?.id || !bookingForm.category) return;
+    quoteError.value = "";
+    const response = await api.getCheckoutQuote({ helper_id: helper.value.id, category: bookingForm.category, service_amount: totalAmount.value, coupon_code: bookingForm.couponCode || null, payment_plan: bookingForm.paymentPlan });
+    if (response.success) checkoutQuote.value = response.data;
+    else { checkoutQuote.value = null; quoteError.value = response.error; }
+};
+watch(() => [bookingForm.hours, bookingForm.category, bookingForm.paymentPlan], loadQuote);
+const loadRazorpay = () => new Promise((resolve, reject) => {
+    if (window.Razorpay) return resolve();
+    const script = document.createElement("script"); script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = resolve; script.onerror = () => reject(new Error("Unable to load Razorpay checkout")); document.head.appendChild(script);
+});
+const startRazorpayCheckout = async (booking, amount) => {
+    const order = await api.createRazorpayOrder(booking.id, amount);
+    if (!order.success) throw new Error(order.error);
+    await loadRazorpay();
+    return new Promise((resolve, reject) => new window.Razorpay({ key: order.data.key_id, amount: order.data.amount, currency: order.data.currency, order_id: order.data.order_id, name: "TimeBuddy", description: "Booking payment", handler: async (response) => {
+        const verified = await api.verifyRazorpayPayment(response); verified.success ? resolve() : reject(new Error(verified.error));
+    }, modal: { ondismiss: () => reject(new Error("Payment cancelled")) } }).open());
+};
 
 // const availableDates = computed(() => {
 //     if (!helper.value || !helper.value.availability) return [];
@@ -406,10 +433,8 @@ const handleBooking = async () => {
     }
     error.dateErr = false;
     error.startTimeErr = false;
-    if (!bookingForm.paymentMethod) {
-        alert("Please select a payment method.");
-        return;
-    }
+    await loadQuote();
+    if (quoteError.value) return;
     if (!bookingForm.date) {
         error.dateErr = true;
         return;
@@ -431,10 +456,10 @@ const handleBooking = async () => {
         end_time: calculateEndTime(),
         hours: bookingForm.hours,
         rate: helper.value.hourlyRate,
-        total_amount: totalAmount.value,
+        total_amount: checkoutQuote.value?.total_customer_amount || totalAmount.value,
         category: bookingForm.category,
         description: bookingForm.description,
-        payment_method: bookingForm.paymentMethod, // Include payment method
+        payment_method: bookingForm.paymentPlan === "full_cash" ? "CASH" : "UPI",
         location: "",
     };
 
@@ -447,11 +472,10 @@ const handleBooking = async () => {
             booking_id: booking.id,
             customer_id: authStore.user.id,
             helper_id: helper.value.id,
-            amount: totalAmount.value,
-            payment_method: bookingForm.paymentMethod,
+            amount: checkoutQuote.value?.online_amount || totalAmount.value,
+            payment_method: bookingForm.paymentPlan === "full_cash" ? "CASH" : "UPI",
         };
-        await payment.createPayment(paymentData);
-        // }
+        if (bookingForm.paymentPlan !== "full_cash") await startRazorpayCheckout(booking, paymentData.amount);
 
         alert("Booking request sent successfully!");
         router.push("/bookings");

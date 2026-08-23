@@ -254,6 +254,41 @@ export const api = {
         }
     },
 
+    async getCheckoutQuote(checkoutData) {
+        try {
+            const { token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/api/v1/checkout/quote`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify(checkoutData),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Unable to calculate checkout total");
+            return { success: true, data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    },
+
+    async createRazorpayOrder(bookingId, amount) {
+        try {
+            const { token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/api/v1/checkout/razorpay/order`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ booking_id: bookingId, amount }) });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Unable to start payment");
+            return { success: true, data };
+        } catch (error) { return { success: false, error: error.message }; }
+    },
+    async verifyRazorpayPayment(payment) {
+        try {
+            const { token } = isTokenExpired();
+            const res = await fetch(`${BASE_URL}/api/v1/checkout/razorpay/verify`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payment) });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Payment verification failed");
+            return { success: true, data };
+        } catch (error) { return { success: false, error: error.message }; }
+    },
+
     async getBookings(userId, role = "customer") {
         try {
             const { payload, token } = isTokenExpired();
