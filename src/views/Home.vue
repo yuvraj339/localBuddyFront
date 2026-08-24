@@ -29,8 +29,8 @@
                 <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">
                     {{ t("home.popularCategories") }}
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div v-for="category in categoryStore.categories" :key="category.id"
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6" v-if="categoryStore.categories.length > 0">
+                    <div v-for="category in categoryStore.categories.slice(0, 12)"" :key="category.id"
                         class="card hover:shadow-xl transition-shadow cursor-pointer"
                         @click="goToCategory(category.name)">
                         <div class="text-center">
@@ -221,7 +221,7 @@ const currentYear = new Date().getFullYear();
 const dashboardPath = computed(() => authStore.hasRole("helper") ? "/helper-dashboard" : "/dashboard");
 
 onMounted(() => {
-    categoryStore.fetchCategories();
+    // categoryStore.fetchCategories();
     helperStore.fetchHelpers();
 });
 

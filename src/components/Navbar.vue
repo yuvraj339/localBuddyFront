@@ -8,33 +8,64 @@
                 </router-link>
 
                 <!-- Desktop nav links -->
-                <div v-if="authStore.isAuthenticated" class="hidden md:flex items-center space-x-1 ml-8 flex-1">
-                    <router-link v-if="authStore.hasRole('customer')" to="/helpers" class="nav-link"
-                        active-class="nav-link-active">
-                        {{ t("nav.findHelpers") }}
-                    </router-link>
-                    <router-link to="/bookings" class="nav-link" active-class="nav-link-active">
-                        {{ t("nav.bookings") }}
-                    </router-link>
-                    <router-link to="/chat" class="nav-link relative" active-class="nav-link-active">
-                        {{ t("nav.messages") }}
-                        <span v-if="unreadCount > 0"
-                            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[1.25rem] h-5 px-1 flex items-center justify-center">
-                            {{ unreadCount }}
-                        </span>
-                    </router-link>
-                    <router-link v-if="authStore.hasRole('helper')" to="/helper-dashboard" class="nav-link"
-                        active-class="nav-link-active">
-                        {{ t("nav.dashboard") }}
-                    </router-link>
-                    <router-link v-else-if="authStore.hasRole('customer')" to="/dashboard" class="nav-link"
-                        active-class="nav-link-active">
-                        {{ t("nav.dashboard") }}
-                    </router-link>
-                    <router-link v-else-if="authStore.hasRole('super_admin')" to="/admin" class="nav-link"
-                        active-class="nav-link-active">
-                        {{ t("nav.dashboard") }}
-                    </router-link>
+                <div class="hidden md:flex items-center space-x-1 ml-8 flex-1">
+                    <div v-if="authStore.isAuthenticated" class="flex items-center space-x-1">
+                        <router-link v-if="authStore.hasRole('customer')" to="/helpers" class="nav-link"
+                            active-class="nav-link-active">
+                            {{ t("nav.findHelpers") }}
+                        </router-link>
+                        <router-link to="/bookings" class="nav-link" active-class="nav-link-active">
+                            {{ t("nav.bookings") }}
+                        </router-link>
+                        <router-link to="/chat" class="nav-link relative" active-class="nav-link-active">
+                            {{ t("nav.messages") }}
+                            <span v-if="unreadCount > 0"
+                                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[1.25rem] h-5 px-1 flex items-center justify-center">
+                                {{ unreadCount }}
+                            </span>
+                        </router-link>
+                        <router-link v-if="authStore.hasRole('helper')" to="/helper-dashboard" class="nav-link"
+                            active-class="nav-link-active">
+                            {{ t("nav.dashboard") }}
+                        </router-link>
+                        <router-link v-else-if="authStore.hasRole('customer')" to="/dashboard" class="nav-link"
+                            active-class="nav-link-active">
+                            {{ t("nav.dashboard") }}
+                        </router-link>
+                        <router-link v-else-if="authStore.hasRole('super_admin')" to="/admin" class="nav-link"
+                            active-class="nav-link-active">
+                            {{ t("nav.dashboard") }}
+                        </router-link>
+                    </div>
+
+                    <!-- Desktop Categories Mega-Menu -->
+                    <div class="relative" ref="categoryDropdown">
+                        <button @click="showCategoryMenu = !showCategoryMenu" class="nav-link flex items-center gap-1"
+                            :aria-expanded="showCategoryMenu">
+                            <span>{{ t("categories.title") || "Categories" }}</span>
+                            <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': showCategoryMenu }"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <transition enter-active-class="transition ease-out duration-150"
+                            enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100"
+                            leave-active-class="transition ease-in duration-100"
+                            leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+                            <div v-if="showCategoryMenu"
+                                class="absolute left-0 mt-2 w-[540px] bg-white rounded-xl shadow-2xl p-3 border border-gray-200 grid grid-cols-2 gap-1 max-h-[80vh] overflow-y-auto z-50">
+                                <router-link v-for="category in categoryStore.categories" :key="category.id"
+                                    :to="`/helpers?category=${category.name}`"
+                                    class="px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600 flex items-center gap-3 transition-colors"
+                                    @click="showCategoryMenu = false">
+                                    <span class="text-2xl shrink-0">{{ category.icon }}</span>
+                                    <span class="font-medium truncate">{{ categoryText(category).name }}</span>
+                                </router-link>
+                            </div>
+                        </transition>
+                    </div>
                 </div>
 
                 <!-- Desktop right side -->
@@ -120,13 +151,14 @@
                     </template>
                 </div>
 
-                <!-- Mobile controls -->
+                <!-- Mobile menu toggle button -->
                 <div class="flex items-center gap-1 md:hidden">
                     <img v-if="authStore.isAuthenticated" :src="avatarSrc(authStore.user?.avatar_url)" alt="Profile"
                         class="w-8 h-8 rounded-full object-cover border-2 border-primary-200 mr-1" />
-                    <button @click="mobileMenuOpen = !mobileMenuOpen"
+                    <button type="button"
                         class="relative inline-flex items-center justify-center w-10 h-10 rounded-lg text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        :aria-expanded="mobileMenuOpen" aria-label="Toggle navigation menu">
+                        :aria-expanded="mobileMenuOpen" aria-label="Toggle navigation menu"
+                        @click.stop="mobileMenuOpen = !mobileMenuOpen">
                         <span v-if="unreadCount > 0 && !mobileMenuOpen"
                             class="absolute top-1 right-1 bg-red-500 w-2 h-2 rounded-full"></span>
                         <svg v-if="!mobileMenuOpen" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
@@ -143,7 +175,7 @@
             </div>
         </div>
 
-        <!-- Mobile menu panel -->
+        <!-- Single unified Mobile menu panel -->
         <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 -translate-y-2"
             enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-150"
             leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
@@ -174,6 +206,34 @@
                                 {{ unreadCount }}
                             </span>
                         </router-link>
+                    </template>
+
+                    <!-- Mobile Categories Accordion Section -->
+                    <div class="py-2 border-y border-gray-100 my-2">
+                        <button @click="mobileCategoriesOpen = !mobileCategoriesOpen"
+                            class="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50 rounded-lg transition-colors">
+                            <span>{{ t("categories.title") || "Categories" }}</span>
+                            <svg class="w-4 h-4 text-gray-500 transition-transform duration-200"
+                                :class="{ 'rotate-180': mobileCategoriesOpen }" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div v-if="mobileCategoriesOpen"
+                            class="grid grid-cols-2 gap-1.5 pt-2 px-1 max-h-60 overflow-y-auto">
+                            <router-link v-for="category in categoryStore.categories" :key="category.id"
+                                :to="`/helpers?category=${category.name}`"
+                                class="flex items-center gap-2 p-2 rounded-lg bg-gray-50 hover:bg-primary-50 text-gray-700 hover:text-primary-600 text-xs font-medium transition-colors"
+                                @click="closeMobileMenu">
+                                <span class="text-lg shrink-0">{{ category.icon }}</span>
+                                <span class="truncate">{{ categoryText(category).name }}</span>
+                            </router-link>
+                        </div>
+                    </div>
+
+                    <template v-if="authStore.isAuthenticated">
                         <router-link v-if="authStore.hasRole('helper')" to="/helper-dashboard" class="mobile-link"
                             active-class="mobile-link-active" @click="closeMobileMenu">
                             {{ t("nav.dashboard") }}
@@ -198,7 +258,7 @@
                     </template>
 
                     <template v-else>
-                        <router-link to="/login" class="btn btn-secondary w-full justify-center text-sm"
+                        <router-link to="/login" class="btn btn-secondary w-full justify-center text-sm mt-2"
                             @click="closeMobileMenu">
                             {{ t("nav.login") }}
                         </router-link>
@@ -208,6 +268,7 @@
                         </router-link>
                     </template>
 
+                    <!-- Language Switcher in Mobile Menu -->
                     <div class="pt-3 mt-2 border-t border-gray-100">
                         <span class="block text-xs font-medium text-gray-500 mb-2 px-2">
                             {{ t("nav.language") }}
@@ -225,30 +286,87 @@
                 </div>
             </div>
         </transition>
+
+        <!-- Breadcrumbs (Shows automatically when deeper than Home page) -->
+        <div v-if="breadcrumbItems.length > 1" class="border-t border-gray-100 bg-gray-50/70">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+                <nav aria-label="Breadcrumb" class="flex items-center gap-2 overflow-x-auto whitespace-nowrap text-sm">
+                    <template v-for="(item, index) in breadcrumbItems" :key="`${item.to}-${index}`">
+                        <svg v-if="index > 0" class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+
+                        <router-link v-if="index < breadcrumbItems.length - 1" :to="item.to"
+                            class="text-gray-500 hover:text-primary-600 transition-colors shrink-0">
+                            {{ item.label }}
+                        </router-link>
+
+                        <span v-else class="font-medium text-gray-800 truncate">
+                            {{ item.label }}
+                        </span>
+                    </template>
+                </nav>
+            </div>
+        </div>
     </nav>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
+import { useCategoryStore } from "../stores/categories";
 import { avatarSrc } from "../utils/util";
-import { useI18n } from "../i18n";
+import { useI18n, localizeCategory } from "../i18n";
+
 const router = useRouter();
 const authStore = useAuthStore();
+const categoryStore = useCategoryStore();
 const { locale, setLocale, supportedLanguages, t } = useI18n();
 
 const showDropdown = ref(false);
 const showLangMenu = ref(false);
+const showCategoryMenu = ref(false);
 const mobileMenuOpen = ref(false);
+const mobileCategoriesOpen = ref(false);
 const unreadCount = ref(0);
+
 const dropdown = ref(null);
 const langDropdown = ref(null);
+const categoryDropdown = ref(null);
+
+const breadcrumbItems = computed(() => {
+    const route = router.currentRoute.value;
+    const items = [{ label: "Home", to: "/" }];
+
+    route.matched.forEach((record) => {
+        if (record.path === "/" || record.meta?.breadcrumb === false) return;
+
+        let label = record.meta?.breadcrumb || record.meta?.title || record.name;
+
+        if (!label) {
+            const segment = record.path.split("/").filter(Boolean).pop();
+            if (!segment || segment.startsWith(":")) return;
+            label = segment.replace(/[-_]/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+        }
+
+        items.push({
+            label: String(label),
+            to: record.path,
+        });
+    });
+
+    return items.filter((item, index, arr) =>
+        index === arr.findIndex((x) => x.label === item.label && x.to === item.to)
+    );
+});
 
 const closeMobileMenu = () => {
     mobileMenuOpen.value = false;
+    mobileCategoriesOpen.value = false;
 };
-
+const categoryText = localizeCategory;
 const selectLocale = (code) => {
     setLocale(code);
     showLangMenu.value = false;
@@ -268,17 +386,23 @@ const handleClickOutside = (event) => {
     if (langDropdown.value && !langDropdown.value.contains(event.target)) {
         showLangMenu.value = false;
     }
+    if (categoryDropdown.value && !categoryDropdown.value.contains(event.target)) {
+        showCategoryMenu.value = false;
+    }
 };
 
-// Close mobile menu automatically on route change
 watch(
     () => router.currentRoute.value.fullPath,
     () => {
         mobileMenuOpen.value = false;
+        mobileCategoriesOpen.value = false;
     }
 );
 
 onMounted(() => {
+    if (categoryStore.categories.length === 0) {
+        categoryStore.fetchCategories();
+    }
     document.addEventListener("click", handleClickOutside);
 });
 
