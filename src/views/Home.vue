@@ -1,7 +1,7 @@
 ﻿<template>
     <div class="home">
         <section class="hero text-white py-20">
-            <div class="mt-32 ml-9 sm:px-6 lg:px-8 w-full">
+            <div class="mt-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                 <div class="text-center">
                     <h1 class="text-4xl sm:text-5xl font-bold mb-6">
                         <!-- {{ t("home.heroTitle").split("\n")[0] }}<br /> -->
@@ -16,7 +16,7 @@
                             {{ t("nav.findHelpers") }}
                         </router-link>
                         <router-link v-if="!authStore.isAuthenticated" to="/register"
-                            class="btn bg-blue-700 text-white hover:bg-blue-800 px-8 py-3 text-lg font-semibold rounded-lg shadow-md transition">
+                            class="btn btn-primary px-8 py-3 text-lg font-semibold rounded-lg shadow-md transition">
                             {{ t("home.becomeHelper") }}
                         </router-link>
                     </div>
