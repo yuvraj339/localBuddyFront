@@ -1,22 +1,22 @@
 ﻿<template>
     <div class="home">
-        <section class="hero bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-20">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section class="hero text-white py-20">
+            <div class="mt-32 ml-9 sm:px-6 lg:px-8 w-full">
                 <div class="text-center">
                     <h1 class="text-4xl sm:text-5xl font-bold mb-6">
-                        {{ t("home.heroTitle").split("\n")[0] }}<br />
-                        {{ t("home.heroTitle").split("\n")[1] }}
+                        <!-- {{ t("home.heroTitle").split("\n")[0] }}<br /> -->
+                        <!-- {{ t("home.heroTitle").split("\n")[1] }} -->
                     </h1>
                     <p class="text-xl mb-8 text-blue-50">
-                        {{ t("home.heroSubtitle") }}
+                        <!-- {{ t("home.heroSubtitle") }} -->
                     </p>
                     <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
                         <router-link to="/helpers"
-                            class="btn bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg">
+                            class="btn bg-blue-400 text-white hover:bg-blue-500 px-8 py-3 text-lg font-semibold rounded-lg shadow-md transition">
                             {{ t("nav.findHelpers") }}
                         </router-link>
                         <router-link v-if="!authStore.isAuthenticated" to="/register"
-                            class="btn bg-blue-700 text-white hover:bg-blue-800 px-8 py-3 text-lg">
+                            class="btn bg-blue-700 text-white hover:bg-blue-800 px-8 py-3 text-lg font-semibold rounded-lg shadow-md transition">
                             {{ t("home.becomeHelper") }}
                         </router-link>
                     </div>
@@ -84,7 +84,7 @@
                                 <span class="text-yellow-400 mr-1">★</span>
                                 <span class="font-medium text-gray-800">{{
                                     helper.rating
-                                }}</span>
+                                    }}</span>
                                 <span class="text-gray-500 text-sm ml-1">({{ helper.reviewCount }})</span>
                             </div>
                             <p class="text-center text-gray-600 text-sm mb-4" v-if="helper.bio">
@@ -150,7 +150,8 @@
 
         <section class="py-16 sm:py-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
             <div class="max-w-4xl mx-auto px-4 text-center">
-                <h2 class="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6">{{ authStore.isAuthenticated ? t("home.welcomeBack") : t("home.ready") }}</h2>
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6">{{ authStore.isAuthenticated ?
+                    t("home.welcomeBack") : t("home.ready") }}</h2>
                 <p class="text-xl mb-8 text-blue-50">
                     {{ authStore.isAuthenticated ? t("home.loggedInPrompt") : t("home.join") }}
                 </p>
@@ -159,7 +160,8 @@
                         {{ t("home.signUpNow") }}
                     </router-link>
                 </template>
-                <router-link v-else :to="dashboardPath" class="btn bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg">
+                <router-link v-else :to="dashboardPath"
+                    class="btn bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg">
                     {{ t("home.goToDashboard") }}
                 </router-link>
             </div>
@@ -176,18 +178,24 @@
                         <h3 class="font-semibold text-white">{{ t("home.quickLinks") }}</h3>
                         <nav class="mt-3 flex flex-col items-start gap-2 text-sm">
                             <router-link to="/helpers" class="hover:text-white">{{ t("nav.findHelpers") }}</router-link>
-                            <router-link v-if="authStore.isAuthenticated" to="/bookings" class="hover:text-white">{{ t("nav.bookings") }}</router-link>
-                            <router-link v-if="authStore.isAuthenticated" to="/chat" class="hover:text-white">{{ t("nav.messages") }}</router-link>
-                            <router-link v-else to="/register" class="hover:text-white">{{ t("nav.signUp") }}</router-link>
+                            <router-link v-if="authStore.isAuthenticated" to="/bookings" class="hover:text-white">{{
+                                t("nav.bookings") }}</router-link>
+                            <router-link v-if="authStore.isAuthenticated" to="/chat" class="hover:text-white">{{
+                                t("nav.messages") }}</router-link>
+                            <router-link v-else to="/register" class="hover:text-white">{{ t("nav.signUp")
+                                }}</router-link>
                         </nav>
                     </div>
                     <div>
                         <h3 class="font-semibold text-white">{{ t("home.contactUs") }}</h3>
                         <p class="mt-3 text-sm text-gray-400">{{ t("home.needHelp") }}</p>
-                        <a href="mailto:shekhawatyuvraj339@gmail.com" class="mt-2 inline-block break-all text-sm text-primary-300 hover:text-white">shekhawatyuvraj339@gmail.com</a>
+                        <a href="mailto:shekhawatyuvraj339@gmail.com"
+                            class="mt-2 inline-block break-all text-sm text-primary-300 hover:text-white">shekhawatyuvraj339@gmail.com</a>
                     </div>
                 </div>
-                <div class="mt-10 border-t border-gray-800 pt-6 text-center text-sm text-gray-500 sm:text-left">© {{ currentYear }} TimeBuddy. {{ t("home.rightsReserved") }}</div>
+                <div class="mt-10 border-t border-gray-800 pt-6 text-center text-sm text-gray-500 sm:text-left">© {{
+                    currentYear
+                    }} TimeBuddy. {{ t("home.rightsReserved") }}</div>
             </div>
         </footer>
     </div>
@@ -227,8 +235,17 @@ const goToCategory = (categoryName) => {
 
 <style scoped>
 .hero {
-    min-height: 500px;
+    min-height: 550px;
+    /* Adjusted to fit your 500px-650px range */
     display: flex;
     align-items: center;
+    justify-content: center;
+    background-image: url('../assets/banner.png');
+    background-size: cover;
+    /* Scales the 1905px image nicely to fit the container */
+    background-position: center;
+    /* Keeps the center of the graphic focused */
+    background-repeat: no-repeat;
+    position: relative;
 }
 </style>
